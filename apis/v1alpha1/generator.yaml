@@ -1,0 +1,8 @@
+ignore:
+  resource_names:
+      - AccessPolicy
+      - Collection
+      - LifecyclePolicy
+      - SecurityConfig
+      - SecurityPolicy
+      - VpcEndpoint
