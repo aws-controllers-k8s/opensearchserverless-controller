@@ -39,6 +39,8 @@ import (
 	svctypes "github.com/aws-controllers-k8s/opensearchserverless-controller/apis/v1alpha1"
 	svcresource "github.com/aws-controllers-k8s/opensearchserverless-controller/pkg/resource"
 
+	_ "github.com/aws-controllers-k8s/opensearchserverless-controller/pkg/resource/collection"
+
 	"github.com/aws-controllers-k8s/opensearchserverless-controller/pkg/version"
 )
 

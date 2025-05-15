@@ -70,6 +70,26 @@ rules:
   - list
   - watch
 - apiGroups:
+  - opensearchserverless.services.k8s.aws
+  resources:
+  - collections
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - opensearchserverless.services.k8s.aws
+  resources:
+  - collections/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
   - services.k8s.aws
   resources:
   - adoptedresources
