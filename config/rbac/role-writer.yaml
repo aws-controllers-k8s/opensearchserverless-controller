@@ -9,6 +9,7 @@ rules:
 - apiGroups:
   - opensearchserverless.services.k8s.aws
   resources:
+  - securitypolicies
   verbs:
   - create
   - delete
@@ -20,6 +21,7 @@ rules:
 - apiGroups:
   - opensearchserverless.services.k8s.aws
   resources:
+  - securitypolicies
   verbs:
   - get
   - patch

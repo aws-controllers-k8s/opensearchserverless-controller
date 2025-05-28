@@ -23,6 +23,26 @@ rules:
   - list
   - watch
 - apiGroups:
+  - opensearchserverless.services.k8s.aws
+  resources:
+  - securitypolicies
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - opensearchserverless.services.k8s.aws
+  resources:
+  - securitypolicies/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
   - services.k8s.aws
   resources:
   - adoptedresources
