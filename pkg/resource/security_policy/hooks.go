@@ -43,7 +43,7 @@ func customPreCompare(delta *ackcompare.Delta, a *resource, b *resource) {
 		}
 		// SecurityPolicy can either be of type Encryption or Network. We will need to convert
 		// the Policy to its appropriate struct so we can ensure we don't have false diffs
-		// (eg. extra whitespace diffs). 
+		// (eg. extra whitespace diffs).
 		if *b.ko.Spec.Type == string(svcsdktypes.SecurityPolicyTypeEncryption) {
 			compareEncryptionPolicy(delta, a, b)
 		} else {
