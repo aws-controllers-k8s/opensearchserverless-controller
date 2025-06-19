@@ -1,0 +1,9 @@
+apiVersion: opensearchserverless.services.k8s.aws/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: $SECURITY_POLICY_NAME
+spec:
+  name: $SECURITY_POLICY_NAME
+  description: $SECURITY_POLICY_DESCRIPTION
+  policy: '$SECURITY_POLICY'
+  type: $SECURITY_POLICY_TYPE

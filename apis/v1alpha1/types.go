@@ -27,3 +27,193 @@ var (
 	_ = &aws.JSONValue{}
 	_ = ackv1alpha1.AWSAccountID("")
 )
+
+// Details about an OpenSearch Serverless access policy.
+type AccessPolicyDetail struct {
+	CreatedDate      *int64  `json:"createdDate,omitempty"`
+	Description      *string `json:"description,omitempty"`
+	LastModifiedDate *int64  `json:"lastModifiedDate,omitempty"`
+	Name             *string `json:"name,omitempty"`
+	PolicyVersion    *string `json:"policyVersion,omitempty"`
+}
+
+// Statistics for an OpenSearch Serverless access policy.
+type AccessPolicyStats struct {
+	DataPolicyCount *int64 `json:"dataPolicyCount,omitempty"`
+}
+
+// A summary of the data access policy.
+type AccessPolicySummary struct {
+	CreatedDate      *int64  `json:"createdDate,omitempty"`
+	Description      *string `json:"description,omitempty"`
+	LastModifiedDate *int64  `json:"lastModifiedDate,omitempty"`
+	Name             *string `json:"name,omitempty"`
+	PolicyVersion    *string `json:"policyVersion,omitempty"`
+}
+
+// Details about each OpenSearch Serverless collection, including the collection
+// endpoint and the OpenSearch Dashboards endpoint.
+type CollectionDetail struct {
+	ARN                *string `json:"arn,omitempty"`
+	CollectionEndpoint *string `json:"collectionEndpoint,omitempty"`
+	CreatedDate        *int64  `json:"createdDate,omitempty"`
+	DashboardEndpoint  *string `json:"dashboardEndpoint,omitempty"`
+	Description        *string `json:"description,omitempty"`
+	FailureCode        *string `json:"failureCode,omitempty"`
+	FailureMessage     *string `json:"failureMessage,omitempty"`
+	KMSKeyARN          *string `json:"kmsKeyARN,omitempty"`
+	LastModifiedDate   *int64  `json:"lastModifiedDate,omitempty"`
+}
+
+// Error information for an OpenSearch Serverless request.
+type CollectionErrorDetail struct {
+	ErrorCode    *string `json:"errorCode,omitempty"`
+	ErrorMessage *string `json:"errorMessage,omitempty"`
+}
+
+// Details about each OpenSearch Serverless collection.
+type CollectionSummary struct {
+	ARN *string `json:"arn,omitempty"`
+}
+
+// Details about the created OpenSearch Serverless collection.
+type CreateCollectionDetail struct {
+	ARN              *string `json:"arn,omitempty"`
+	CreatedDate      *int64  `json:"createdDate,omitempty"`
+	Description      *string `json:"description,omitempty"`
+	KMSKeyARN        *string `json:"kmsKeyARN,omitempty"`
+	LastModifiedDate *int64  `json:"lastModifiedDate,omitempty"`
+}
+
+// Error information for an OpenSearch Serverless request.
+type EffectiveLifecyclePolicyDetail struct {
+	PolicyName      *string `json:"policyName,omitempty"`
+	Resource        *string `json:"resource,omitempty"`
+	RetentionPeriod *string `json:"retentionPeriod,omitempty"`
+}
+
+// Error information for an OpenSearch Serverless request.
+type EffectiveLifecyclePolicyErrorDetail struct {
+	ErrorCode    *string `json:"errorCode,omitempty"`
+	ErrorMessage *string `json:"errorMessage,omitempty"`
+	Resource     *string `json:"resource,omitempty"`
+}
+
+// Describes IAM Identity Center options for an OpenSearch Serverless security
+// configuration in the form of a key-value map.
+type IAMIdentityCenterConfigOptions struct {
+	ApplicationDescription *string `json:"applicationDescription,omitempty"`
+	ApplicationName        *string `json:"applicationName,omitempty"`
+}
+
+// Details about an OpenSearch Serverless lifecycle policy.
+type LifecyclePolicyDetail struct {
+	CreatedDate      *int64  `json:"createdDate,omitempty"`
+	Description      *string `json:"description,omitempty"`
+	LastModifiedDate *int64  `json:"lastModifiedDate,omitempty"`
+	Name             *string `json:"name,omitempty"`
+	PolicyVersion    *string `json:"policyVersion,omitempty"`
+}
+
+// Error information for an OpenSearch Serverless request.
+type LifecyclePolicyErrorDetail struct {
+	ErrorCode    *string `json:"errorCode,omitempty"`
+	ErrorMessage *string `json:"errorMessage,omitempty"`
+	Name         *string `json:"name,omitempty"`
+}
+
+// The unique identifiers of policy types and policy names.
+type LifecyclePolicyIdentifier struct {
+	Name *string `json:"name,omitempty"`
+}
+
+// Statistics for an OpenSearch Serverless lifecycle policy.
+type LifecyclePolicyStats struct {
+	RetentionPolicyCount *int64 `json:"retentionPolicyCount,omitempty"`
+}
+
+// A summary of the lifecycle policy.
+type LifecyclePolicySummary struct {
+	CreatedDate      *int64  `json:"createdDate,omitempty"`
+	Description      *string `json:"description,omitempty"`
+	LastModifiedDate *int64  `json:"lastModifiedDate,omitempty"`
+	Name             *string `json:"name,omitempty"`
+	PolicyVersion    *string `json:"policyVersion,omitempty"`
+}
+
+// Describes SAML options for an OpenSearch Serverless security configuration
+// in the form of a key-value map.
+type SamlConfigOptions struct {
+	SessionTimeout *int64 `json:"sessionTimeout,omitempty"`
+}
+
+// Details about a security configuration for OpenSearch Serverless.
+type SecurityConfigDetail struct {
+	ConfigVersion    *string `json:"configVersion,omitempty"`
+	CreatedDate      *int64  `json:"createdDate,omitempty"`
+	LastModifiedDate *int64  `json:"lastModifiedDate,omitempty"`
+}
+
+// Statistics for an OpenSearch Serverless security configuration.
+type SecurityConfigStats struct {
+	SamlConfigCount *int64 `json:"samlConfigCount,omitempty"`
+}
+
+// A summary of a security configuration for OpenSearch Serverless.
+type SecurityConfigSummary struct {
+	ConfigVersion    *string `json:"configVersion,omitempty"`
+	CreatedDate      *int64  `json:"createdDate,omitempty"`
+	LastModifiedDate *int64  `json:"lastModifiedDate,omitempty"`
+}
+
+// Details about an OpenSearch Serverless security policy.
+type SecurityPolicyDetail struct {
+	CreatedDate      *int64  `json:"createdDate,omitempty"`
+	Description      *string `json:"description,omitempty"`
+	LastModifiedDate *int64  `json:"lastModifiedDate,omitempty"`
+	Name             *string `json:"name,omitempty"`
+	PolicyVersion    *string `json:"policyVersion,omitempty"`
+	Type             *string `json:"type_,omitempty"`
+}
+
+// Statistics for an OpenSearch Serverless security policy.
+type SecurityPolicyStats struct {
+	EncryptionPolicyCount *int64 `json:"encryptionPolicyCount,omitempty"`
+	NetworkPolicyCount    *int64 `json:"networkPolicyCount,omitempty"`
+}
+
+// A summary of a security policy for OpenSearch Serverless.
+type SecurityPolicySummary struct {
+	CreatedDate      *int64  `json:"createdDate,omitempty"`
+	Description      *string `json:"description,omitempty"`
+	LastModifiedDate *int64  `json:"lastModifiedDate,omitempty"`
+	Name             *string `json:"name,omitempty"`
+	PolicyVersion    *string `json:"policyVersion,omitempty"`
+	Type             *string `json:"type_,omitempty"`
+}
+
+// Details about an updated OpenSearch Serverless collection.
+type UpdateCollectionDetail struct {
+	ARN              *string `json:"arn,omitempty"`
+	CreatedDate      *int64  `json:"createdDate,omitempty"`
+	Description      *string `json:"description,omitempty"`
+	LastModifiedDate *int64  `json:"lastModifiedDate,omitempty"`
+}
+
+// Update details for an OpenSearch Serverless-managed interface endpoint.
+type UpdateVPCEndpointDetail struct {
+	LastModifiedDate *int64 `json:"lastModifiedDate,omitempty"`
+}
+
+// Details about an OpenSearch Serverless-managed interface endpoint.
+type VPCEndpointDetail struct {
+	CreatedDate    *int64  `json:"createdDate,omitempty"`
+	FailureCode    *string `json:"failureCode,omitempty"`
+	FailureMessage *string `json:"failureMessage,omitempty"`
+}
+
+// Error information for a failed BatchGetVpcEndpoint request.
+type VPCEndpointErrorDetail struct {
+	ErrorCode    *string `json:"errorCode,omitempty"`
+	ErrorMessage *string `json:"errorMessage,omitempty"`
+}
