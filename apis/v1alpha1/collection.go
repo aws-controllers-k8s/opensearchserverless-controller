@@ -28,15 +28,18 @@ type CollectionSpec struct {
 	// Name of the collection.
 	//
 	// Regex Pattern: `^[a-z][a-z0-9-]+$`
+	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="Value is immutable once set"
 	// +kubebuilder:validation:Required
 	Name *string `json:"name"`
 	// Indicates whether standby replicas should be used for a collection.
+	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="Value is immutable once set"
 	StandbyReplicas *string `json:"standbyReplicas,omitempty"`
 	// An arbitrary set of tags (key–value pairs) to associate with the OpenSearch
 	// Serverless collection.
 	Tags []*Tag `json:"tags,omitempty"`
 	// The type of collection.
-	Type *string `json:"type,omitempty"`
+	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="Value is immutable once set"
+	Type *string `json:"type_,omitempty"`
 }
 
 // CollectionStatus defines the observed state of Collection

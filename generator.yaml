@@ -17,6 +17,7 @@ operations:
   BatchGetCollection:
     operation_type:
     - List
+    output_wrapper_field_path: CollectionDetails
     resource_name: Collection
 resources:
   SecurityPolicy:
@@ -43,6 +44,12 @@ resources:
     fields:
       Type:
         go_tag: json:"type,omitempty"
+      Name:
+        is_immutable: true
+      StandbyReplicas:
+        is_immutable: true
+      Type:
+        is_immutable: true
     hooks:
       sdk_update_pre_build_request:
         template_path: hooks/collection/sdk_update_pre_build_request.go.tpl

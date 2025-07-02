@@ -151,10 +151,15 @@ func (rm *resourceManager) sdkFind(
 	}
 
 	rm.setStatusDefaults(ko)
-	r.ko.Spec.Tags, err = getTags(ctx, string(*ko.Status.ACKResourceMetadata.ARN), rm.sdkapi, rm.metrics)
+	ko.Spec.Tags, err = getTags(ctx, string(*ko.Status.ACKResourceMetadata.ARN), rm.sdkapi, rm.metrics)
 	if err != nil {
 		return &resource{ko}, err
 	}
+
+	if !collectionIsActive(&resource{ko}) {
+		ackcondition.SetSynced(&resource{ko}, corev1.ConditionFalse, aws.String("collection is not active"), nil)
+	}
+
 	return &resource{ko}, nil
 }
 
@@ -321,6 +326,9 @@ func (rm *resourceManager) sdkUpdate(
 		exit(err)
 	}()
 	desired.SetStatus(latest)
+	if !collectionIsActive(desired) {
+		return desired, ackrequeue.Needed(fmt.Errorf("resource is %s", *desired.ko.Status.Status))
+	}
 	if delta.DifferentAt("Spec.Tags") {
 		arn := string(*latest.ko.Status.ACKResourceMetadata.ARN)
 		err = syncTags(
