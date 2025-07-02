@@ -24,19 +24,22 @@ from acktest.resources import random_suffix_name
 from e2e import service_marker, CRD_GROUP, CRD_VERSION, load_resource
 from e2e.replacement_values import REPLACEMENT_VALUES
 from e2e import collection
+from e2e.tests.test_security_policy import simple_security_policy
 
 COLLECTION_RESOURCE_PLURAL = "collections"
 DELETE_WAIT_AFTER_SECONDS = 10
 CHECK_STATUS_WAIT_SECONDS = 30
 MODIFY_WAIT_AFTER_SECONDS = 30
 INITIAL_DESCRIPTION = "Initial Description"
-UPDATED_DESCRIPTION = "UPDATEd Description"
+UPDATED_DESCRIPTION = "Updated Description"
 
 
-@pytest.fixture(scope="module")
-def simple_collection():
+@pytest.fixture
+def simple_collection(simple_security_policy):
+    # EncryptionType securityPolicy is required to create Collection resource
+    _, _ = simple_security_policy
+    
     collection_name = random_suffix_name("my-collection", 24)
-
     replacements = REPLACEMENT_VALUES.copy()
     replacements['COLLECTION_NAME'] = collection_name
     replacements['DESCRIPTION'] = "Initial Description"
@@ -92,10 +95,14 @@ class TestCollection:
         desired_tags = cr['spec']['tags']
         tags.assert_ack_system_tags(
             tags=latest_tags,
+            key_member_name='key',
+            value_member_name='value'
         )
         tags.assert_equal_without_ack_tags(
             expected=desired_tags,
             actual=latest_tags,
+            key_member_name='key',
+            value_member_name='value'
         )
 
         # Update the collection
@@ -131,8 +138,12 @@ class TestCollection:
         desired_tags = cr['spec']['tags']
         tags.assert_ack_system_tags(
             tags=latest_tags,
+            key_member_name='key',
+            value_member_name='value'
         )
         tags.assert_equal_without_ack_tags(
             expected=desired_tags,
             actual=latest_tags,
+            key_member_name='key',
+            value_member_name='value'
         )
