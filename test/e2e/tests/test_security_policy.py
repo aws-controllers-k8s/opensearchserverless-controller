@@ -41,22 +41,28 @@ INITIAL_NETWORK_POLICY = '[{"Rules": [{"ResourceType": "collection","Resource": 
 UPDATED_NETWORK_POLICY = '[{"Rules": [{"ResourceType": "collection","Resource": ["collection/*"]},{"ResourceType": "dashboard","Resource": ["collection/logs*"]}],"AllowFromPublic": true}]'
 
 
-
 @pytest.fixture
 def simple_security_policy(request):
     sp_name = random_suffix_name("my-security-policy", 24)
     marker = request.node.get_closest_marker("resource_data")
-    assert marker is not None
-    data = marker.args[0]
-    # either encryption or network
-    assert 'type' in data
-    assert 'policy' in data
+    # We want to default to an encryptionPolicy that applies to all collections
+    # when no marker is provided. This will allow us to create SecurityPolicy
+    # seamlessly when testing Collections
+    sp_type = "encryption"
+    sp_policy = UPDATED_ENCRYPTION_POLICY
+    if marker is not None:
+        data = marker.args[0]
+        # either encryption or network
+        assert 'type' in data
+        sp_type = data['type']
+        assert 'policy' in data
+        sp_policy = data['policy']
 
     replacements = REPLACEMENT_VALUES.copy()
     replacements['SECURITY_POLICY_NAME'] = sp_name
     replacements['SECURITY_POLICY_DESCRIPTION'] = INITIAL_DESCRIPTION
-    replacements['SECURITY_POLICY_TYPE'] = data['type']
-    replacements['SECURITY_POLICY'] = data['policy']
+    replacements['SECURITY_POLICY_TYPE'] = sp_type
+    replacements['SECURITY_POLICY'] = sp_policy
 
     resource_data = load_resource(
         "security_policy",

@@ -26,7 +26,7 @@ import (
 	svcapitypes "github.com/aws-controllers-k8s/opensearchserverless-controller/apis/v1alpha1"
 )
 
-// SyncTags examines the Tags in the supplied Resource and calls the
+// Tags examines the Tags in the supplied Resource and calls the
 // TagResource and UntagResource APIs to ensure that the set of
 // associated Tags stays in sync with the Resource.Spec.Tags
 func Tags(

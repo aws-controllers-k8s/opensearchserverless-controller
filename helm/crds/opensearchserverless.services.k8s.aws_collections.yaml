@@ -48,10 +48,16 @@ spec:
 
                   Regex Pattern: `^[a-z][a-z0-9-]+$`
                 type: string
+                x-kubernetes-validations:
+                - message: Value is immutable once set
+                  rule: self == oldSelf
               standbyReplicas:
                 description: Indicates whether standby replicas should be used for
                   a collection.
                 type: string
+                x-kubernetes-validations:
+                - message: Value is immutable once set
+                  rule: self == oldSelf
               tags:
                 description: |-
                   An arbitrary set of tags (key–value pairs) to associate with the OpenSearch
@@ -69,6 +75,9 @@ spec:
               type:
                 description: The type of collection.
                 type: string
+                x-kubernetes-validations:
+                - message: Value is immutable once set
+                  rule: self == oldSelf
             required:
             - name
             type: object

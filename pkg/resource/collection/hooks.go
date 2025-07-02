@@ -14,8 +14,19 @@
 package collection
 
 import (
+	svcsdktypes "github.com/aws/aws-sdk-go-v2/service/opensearchserverless/types"
+
 	"github.com/aws-controllers-k8s/opensearchserverless-controller/pkg/sync"
 )
 
 var syncTags = sync.Tags
 var getTags = sync.GetTags
+
+// collectionIsActive returns true if the collection is active, or false if it is not active
+func collectionIsActive(desired *resource) bool {
+	if desired.ko.Status.Status != nil && *desired.ko.Status.Status == string(svcsdktypes.CollectionStatusActive) {
+		return true
+	}
+
+	return false
+}
