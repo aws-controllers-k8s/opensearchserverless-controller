@@ -61,19 +61,36 @@ type CollectionDetail struct {
 	Description        *string `json:"description,omitempty"`
 	FailureCode        *string `json:"failureCode,omitempty"`
 	FailureMessage     *string `json:"failureMessage,omitempty"`
+	ID                 *string `json:"id,omitempty"`
 	KMSKeyARN          *string `json:"kmsKeyARN,omitempty"`
 	LastModifiedDate   *int64  `json:"lastModifiedDate,omitempty"`
+	Name               *string `json:"name,omitempty"`
+	StandbyReplicas    *string `json:"standbyReplicas,omitempty"`
+	Status             *string `json:"status,omitempty"`
+	Type               *string `json:"type_,omitempty"`
 }
 
 // Error information for an OpenSearch Serverless request.
 type CollectionErrorDetail struct {
 	ErrorCode    *string `json:"errorCode,omitempty"`
 	ErrorMessage *string `json:"errorMessage,omitempty"`
+	ID           *string `json:"id,omitempty"`
+	Name         *string `json:"name,omitempty"`
+}
+
+// A list of filter keys that you can use for LIST, UPDATE, and DELETE requests
+// to OpenSearch Serverless collections.
+type CollectionFilters struct {
+	Name   *string `json:"name,omitempty"`
+	Status *string `json:"status,omitempty"`
 }
 
 // Details about each OpenSearch Serverless collection.
 type CollectionSummary struct {
-	ARN *string `json:"arn,omitempty"`
+	ARN    *string `json:"arn,omitempty"`
+	ID     *string `json:"id,omitempty"`
+	Name   *string `json:"name,omitempty"`
+	Status *string `json:"status,omitempty"`
 }
 
 // Details about the created OpenSearch Serverless collection.
@@ -81,8 +98,20 @@ type CreateCollectionDetail struct {
 	ARN              *string `json:"arn,omitempty"`
 	CreatedDate      *int64  `json:"createdDate,omitempty"`
 	Description      *string `json:"description,omitempty"`
+	ID               *string `json:"id,omitempty"`
 	KMSKeyARN        *string `json:"kmsKeyARN,omitempty"`
 	LastModifiedDate *int64  `json:"lastModifiedDate,omitempty"`
+	Name             *string `json:"name,omitempty"`
+	StandbyReplicas  *string `json:"standbyReplicas,omitempty"`
+	Status           *string `json:"status,omitempty"`
+	Type             *string `json:"type_,omitempty"`
+}
+
+// Details about a deleted OpenSearch Serverless collection.
+type DeleteCollectionDetail struct {
+	ID     *string `json:"id,omitempty"`
+	Name   *string `json:"name,omitempty"`
+	Status *string `json:"status,omitempty"`
 }
 
 // Error information for an OpenSearch Serverless request.
@@ -192,12 +221,22 @@ type SecurityPolicySummary struct {
 	Type             *string `json:"type_,omitempty"`
 }
 
+// A map of key-value pairs associated to an OpenSearch Serverless resource.
+type Tag struct {
+	Key   *string `json:"key,omitempty"`
+	Value *string `json:"value,omitempty"`
+}
+
 // Details about an updated OpenSearch Serverless collection.
 type UpdateCollectionDetail struct {
 	ARN              *string `json:"arn,omitempty"`
 	CreatedDate      *int64  `json:"createdDate,omitempty"`
 	Description      *string `json:"description,omitempty"`
+	ID               *string `json:"id,omitempty"`
 	LastModifiedDate *int64  `json:"lastModifiedDate,omitempty"`
+	Name             *string `json:"name,omitempty"`
+	Status           *string `json:"status,omitempty"`
+	Type             *string `json:"type_,omitempty"`
 }
 
 // Update details for an OpenSearch Serverless-managed interface endpoint.

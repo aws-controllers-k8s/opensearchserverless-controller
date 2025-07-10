@@ -21,13 +21,13 @@ const (
 	AccessPolicyType_data AccessPolicyType = "data"
 )
 
-type CollectionStatus string
+type CollectionStatus_SDK string
 
 const (
-	CollectionStatus_CREATING CollectionStatus = "CREATING"
-	CollectionStatus_DELETING CollectionStatus = "DELETING"
-	CollectionStatus_ACTIVE   CollectionStatus = "ACTIVE"
-	CollectionStatus_FAILED   CollectionStatus = "FAILED"
+	CollectionStatus_SDK_CREATING CollectionStatus_SDK = "CREATING"
+	CollectionStatus_SDK_DELETING CollectionStatus_SDK = "DELETING"
+	CollectionStatus_SDK_ACTIVE   CollectionStatus_SDK = "ACTIVE"
+	CollectionStatus_SDK_FAILED   CollectionStatus_SDK = "FAILED"
 )
 
 type CollectionType string
