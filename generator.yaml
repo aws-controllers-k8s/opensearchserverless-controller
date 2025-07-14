@@ -1,7 +1,7 @@
 ignore:
   resource_names:
       - AccessPolicy
-      - Collection
+      # - Collection
       - LifecyclePolicy
       - SecurityConfig
       # - SecurityPolicy
@@ -10,6 +10,15 @@ ignore:
       - CreateSecurityPolicyOutput.SecurityPolicyDetail.Policy
       - CreateSecurityPolicyOutput.SecurityPolicyDetail.ClientToken
       - CreateSecurityPolicyInput.ClientToken
+      - CreateCollectionInput.ClientToken
+operations:
+  CreateCollection:
+    output_wrapper_field_path: CreateCollectionDetail
+  BatchGetCollection:
+    operation_type:
+    - List
+    output_wrapper_field_path: CollectionDetails
+    resource_name: Collection
 resources:
   SecurityPolicy:
   # Tags are not supported for SecurityPolicy 
@@ -30,3 +39,18 @@ resources:
           is_ignored: true
       Name:
         is_immutable: true
+  Collection:
+    is_arn_primary_key: true
+    fields:
+      Type:
+        is_immutable: true
+        go_tag: json:"type,omitempty"
+      Name:
+        is_immutable: true
+      StandbyReplicas:
+        is_immutable: true
+    hooks:
+      sdk_update_pre_build_request:
+        template_path: hooks/collection/sdk_update_pre_build_request.go.tpl
+      sdk_read_many_post_set_output:
+        template_path: hooks/collection/sdk_read_many_post_set_output.go.tpl

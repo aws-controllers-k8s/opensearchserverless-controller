@@ -1,0 +1,10 @@
+apiVersion: opensearchserverless.services.k8s.aws/v1alpha1
+kind: Collection
+metadata:
+  name: $COLLECTION_NAME
+spec:
+  description: $DESCRIPTION
+  name: $COLLECTION_NAME
+  tags:
+  - key: key
+    value: val
