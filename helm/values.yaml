@@ -4,7 +4,7 @@
 
 image:
   repository: public.ecr.aws/aws-controllers-k8s/opensearchserverless-controller
-  tag: 0.3.3
+  tag: 0.4.0
   pullPolicy: IfNotPresent
   pullSecrets: []
 
