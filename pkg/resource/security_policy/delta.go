@@ -40,7 +40,6 @@ func newResourceDelta(
 		delta.Add("", a, b)
 		return delta
 	}
-	customPreCompare(delta, a, b)
 
 	if ackcompare.HasNilDifference(a.ko.Spec.Description, b.ko.Spec.Description) {
 		delta.Add("Spec.Description", a.ko.Spec.Description, b.ko.Spec.Description)
@@ -54,6 +53,13 @@ func newResourceDelta(
 	} else if a.ko.Spec.Name != nil && b.ko.Spec.Name != nil {
 		if *a.ko.Spec.Name != *b.ko.Spec.Name {
 			delta.Add("Spec.Name", a.ko.Spec.Name, b.ko.Spec.Name)
+		}
+	}
+	if ackcompare.HasNilDifference(a.ko.Spec.Policy, b.ko.Spec.Policy) {
+		delta.Add("Spec.Policy", a.ko.Spec.Policy, b.ko.Spec.Policy)
+	} else if a.ko.Spec.Policy != nil && b.ko.Spec.Policy != nil {
+		if equal, err := ackcompare.DocumentEqual(*a.ko.Spec.Policy, *b.ko.Spec.Policy); err != nil || !equal {
+			delta.Add("Spec.Policy", a.ko.Spec.Policy, b.ko.Spec.Policy)
 		}
 	}
 	if ackcompare.HasNilDifference(a.ko.Spec.Type, b.ko.Spec.Type) {
