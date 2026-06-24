@@ -13,6 +13,8 @@
 
 """Integration tests for the OpensearchServerless Collection resource"""
 
+import time
+
 import pytest
 
 from acktest.k8s import resource as k8s
@@ -29,6 +31,8 @@ DELETE_WAIT_AFTER_SECONDS = 10
 # Use wait_on_condition with enough periods instead of a fixed sleep.
 ACTIVE_WAIT_PERIODS = 10
 ACTIVE_WAIT_PERIOD_LENGTH = 30  # 10 * 30s = up to 5 minutes
+CHECK_STATUS_WAIT_SECONDS = 30
+MODIFY_WAIT_AFTER_SECONDS = 30
 INITIAL_DESCRIPTION = "Initial Description"
 UPDATED_DESCRIPTION = "Updated Description"
 
@@ -59,14 +63,6 @@ def simple_collection(simple_security_policy):
 
     yield (ref, cr)
 
-    # Wait for the collection to reach ACTIVE before deleting to avoid
-    # ConflictException ("Collection cannot be deleted because it is not in
-    # 'ACTIVE', 'FAILED', or 'UPDATE_FAILED' status.")
-    k8s.wait_on_condition(
-        ref, "ACK.ResourceSynced", "True",
-        wait_periods=ACTIVE_WAIT_PERIODS,
-        period_length=ACTIVE_WAIT_PERIOD_LENGTH,
-    )
     _, deleted = k8s.delete_custom_resource(
         ref,
         period_length=DELETE_WAIT_AFTER_SECONDS,
@@ -82,6 +78,7 @@ class TestCollection:
 
         # Wait for the collection to reach ACTIVE (ResourceSynced=True).
         # Collections can take 1-2 minutes to provision.
+        time.sleep(CHECK_STATUS_WAIT_SECONDS)
         assert k8s.wait_on_condition(
             ref, "ACK.ResourceSynced", "True",
             wait_periods=ACTIVE_WAIT_PERIODS,
@@ -128,6 +125,7 @@ class TestCollection:
             },
         }
         k8s.patch_custom_resource(ref, updates)
+        time.sleep(MODIFY_WAIT_AFTER_SECONDS)
 
         # Wait for the update to reconcile
         assert k8s.wait_on_condition(
