@@ -17,7 +17,6 @@ import time
 
 import pytest
 
-from acktest.k8s import condition
 from acktest.k8s import resource as k8s
 from acktest import tags
 from acktest.resources import random_suffix_name
@@ -28,6 +27,10 @@ from e2e.tests.test_security_policy import simple_security_policy
 
 COLLECTION_RESOURCE_PLURAL = "collections"
 DELETE_WAIT_AFTER_SECONDS = 10
+# OpenSearch Serverless collections can take 1-2 minutes to reach ACTIVE.
+# Use wait_on_condition with enough periods instead of a fixed sleep.
+ACTIVE_WAIT_PERIODS = 10
+ACTIVE_WAIT_PERIOD_LENGTH = 30  # 10 * 30s = up to 5 minutes
 CHECK_STATUS_WAIT_SECONDS = 30
 MODIFY_WAIT_AFTER_SECONDS = 30
 INITIAL_DESCRIPTION = "Initial Description"
@@ -73,8 +76,14 @@ class TestCollection:
     def test_crud(self, simple_collection):
         ref, _ = simple_collection
 
+        # Wait for the collection to reach ACTIVE (ResourceSynced=True).
+        # Collections can take 1-2 minutes to provision.
         time.sleep(CHECK_STATUS_WAIT_SECONDS)
-        condition.assert_synced(ref)
+        assert k8s.wait_on_condition(
+            ref, "ACK.ResourceSynced", "True",
+            wait_periods=ACTIVE_WAIT_PERIODS,
+            period_length=ACTIVE_WAIT_PERIOD_LENGTH,
+        ), "Collection did not reach ACTIVE (ResourceSynced=True) in time"
 
         # Check that collection exists
         cr = k8s.get_resource(ref)
@@ -117,6 +126,13 @@ class TestCollection:
         }
         k8s.patch_custom_resource(ref, updates)
         time.sleep(MODIFY_WAIT_AFTER_SECONDS)
+
+        # Wait for the update to reconcile
+        assert k8s.wait_on_condition(
+            ref, "ACK.ResourceSynced", "True",
+            wait_periods=ACTIVE_WAIT_PERIODS,
+            period_length=ACTIVE_WAIT_PERIOD_LENGTH,
+        ), "Collection did not reach ResourceSynced=True after update"
 
         cr = k8s.get_resource(ref)
         assert cr is not None
