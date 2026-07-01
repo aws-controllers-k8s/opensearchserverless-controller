@@ -27,10 +27,9 @@ from e2e.tests.test_security_policy import simple_security_policy
 
 COLLECTION_RESOURCE_PLURAL = "collections"
 DELETE_WAIT_AFTER_SECONDS = 10
-# OpenSearch Serverless collections can take 1-2 minutes to reach ACTIVE.
-# Use wait_on_condition with enough periods instead of a fixed sleep.
-ACTIVE_WAIT_PERIODS = 10
-ACTIVE_WAIT_PERIOD_LENGTH = 30  # 10 * 30s = up to 5 minutes
+# Collection provisioning can exceed 5 min under load; allow up to 15 minutes.
+ACTIVE_WAIT_PERIODS = 30
+ACTIVE_WAIT_PERIOD_LENGTH = 30  # 30 * 30s = up to 15 minutes
 CHECK_STATUS_WAIT_SECONDS = 30
 MODIFY_WAIT_AFTER_SECONDS = 30
 INITIAL_DESCRIPTION = "Initial Description"
@@ -77,7 +76,6 @@ class TestCollection:
         ref, _ = simple_collection
 
         # Wait for the collection to reach ACTIVE (ResourceSynced=True).
-        # Collections can take 1-2 minutes to provision.
         time.sleep(CHECK_STATUS_WAIT_SECONDS)
         assert k8s.wait_on_condition(
             ref, "ACK.ResourceSynced", "True",
