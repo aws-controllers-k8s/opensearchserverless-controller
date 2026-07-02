@@ -13,6 +13,7 @@
 
 """Integration tests for the OpensearchServerless Collection resource"""
 
+import json
 import time
 
 import pytest
@@ -33,30 +34,54 @@ MODIFY_WAIT_AFTER_SECONDS = 30
 # Descriptions
 INITIAL_DESCRIPTION = "Initial Description"
 UPDATED_DESCRIPTION = "Updated Description"
-# Encryption Policy
-INITIAL_ENCRYPTION_POLICY = '{"AWSOwnedKey":true,"Rules":[{"Resource":["collection/mycollection"],"ResourceType":"collection"}]}'
-UPDATED_ENCRYPTION_POLICY = '{"AWSOwnedKey":true,"Rules":[{"Resource":["collection/*"],"ResourceType":"collection"}]}'
-# Network Policy
-INITIAL_NETWORK_POLICY = '[{"Rules": [{"ResourceType": "collection","Resource": ["collection/logs*"]},{"ResourceType": "dashboard","Resource": ["collection/logs*"]}],"AllowFromPublic": true}]'
-UPDATED_NETWORK_POLICY = '[{"Rules": [{"ResourceType": "collection","Resource": ["collection/*"]},{"ResourceType": "dashboard","Resource": ["collection/logs*"]}],"AllowFromPublic": true}]'
+
+
+# OpenSearch Serverless rejects a security policy whose resource pattern
+# overlaps an existing policy of the same type with a ConflictException. The
+# soak suite runs these tests continuously across parallel workers, so shared
+# patterns like "collection/*" or "collection/mycollection" collide between
+# concurrent iterations. Build every policy against a unique per-fixture
+# collection scope (collection/<unique>) instead so iterations never conflict.
+def _encryption_policy(resource):
+    return json.dumps({
+        "AWSOwnedKey": True,
+        "Rules": [{"Resource": [resource], "ResourceType": "collection"}],
+    })
+
+
+def _network_policy(resource):
+    return json.dumps([{
+        "Rules": [
+            {"ResourceType": "collection", "Resource": [resource]},
+            {"ResourceType": "dashboard", "Resource": [resource]},
+        ],
+        "AllowFromPublic": True,
+    }])
 
 
 @pytest.fixture
 def simple_security_policy(request):
     sp_name = random_suffix_name("my-security-policy", 24)
+    # Unique collection scope for this fixture instance so policies created by
+    # concurrent iterations never overlap (see note above).
+    scope = random_suffix_name("col", 12)
+    resource = f"collection/{scope}"
+
     marker = request.node.get_closest_marker("resource_data")
-    # We want to default to an encryptionPolicy that applies to all collections
-    # when no marker is provided. This will allow us to create SecurityPolicy
-    # seamlessly when testing Collections
+    # Default (no marker): an encryption policy covering this instance's unique
+    # scope, used when creating Collections. The trailing wildcard lets it cover
+    # a collection named "<scope>-...".
     sp_type = "encryption"
-    sp_policy = UPDATED_ENCRYPTION_POLICY
+    sp_policy = _encryption_policy(f"{resource}*")
     if marker is not None:
         data = marker.args[0]
         # either encryption or network
         assert 'type' in data
         sp_type = data['type']
-        assert 'policy' in data
-        sp_policy = data['policy']
+        if sp_type == "network":
+            sp_policy = _network_policy(resource)
+        else:
+            sp_policy = _encryption_policy(resource)
 
     replacements = REPLACEMENT_VALUES.copy()
     replacements['SECURITY_POLICY_NAME'] = sp_name
@@ -78,7 +103,7 @@ def simple_security_policy(request):
 
     assert k8s.get_resource_exists(ref)
 
-    yield (ref, cr)
+    yield (ref, cr, scope)
 
     _, deleted = k8s.delete_custom_resource(
         ref,
@@ -90,9 +115,9 @@ def simple_security_policy(request):
 @service_marker
 @pytest.mark.canary
 class TestCollection:
-    @pytest.mark.resource_data({'type': 'encryption', 'policy': INITIAL_ENCRYPTION_POLICY})
+    @pytest.mark.resource_data({'type': 'encryption'})
     def test_encryption_crud(self, simple_security_policy):
-        ref, _ = simple_security_policy
+        ref, _, scope = simple_security_policy
 
         time.sleep(CHECK_STATUS_WAIT_SECONDS)
         condition.assert_synced(ref)
@@ -112,14 +137,12 @@ class TestCollection:
 
         latest = security_policy.get(name, type)
         assert latest is not None
-        latest['description'] == INITIAL_DESCRIPTION
-        latest['policy'] == INITIAL_ENCRYPTION_POLICY
 
-        # Update the security policy
+        # Update the security policy to a broader (but still unique) scope
         updates = {
             "spec": {
                 "description": UPDATED_DESCRIPTION,
-                "policy": UPDATED_ENCRYPTION_POLICY
+                "policy": _encryption_policy(f"collection/{scope}*")
             },
         }
         k8s.patch_custom_resource(ref, updates)
@@ -128,12 +151,10 @@ class TestCollection:
         cr = k8s.get_resource(ref)
         latest = security_policy.get(name, type)
         assert latest is not None
-        latest['description'] == UPDATED_DESCRIPTION
-        latest['policy'] == UPDATED_ENCRYPTION_POLICY
 
-    @pytest.mark.resource_data({'type': 'network', 'policy': INITIAL_NETWORK_POLICY})
+    @pytest.mark.resource_data({'type': 'network'})
     def test_network_crud(self, simple_security_policy):
-        ref, _ = simple_security_policy
+        ref, _, scope = simple_security_policy
 
         time.sleep(CHECK_STATUS_WAIT_SECONDS)
         condition.assert_synced(ref)
@@ -153,14 +174,12 @@ class TestCollection:
 
         latest = security_policy.get(name, type)
         assert latest is not None
-        latest['description'] == INITIAL_DESCRIPTION
-        latest['policy'] == INITIAL_NETWORK_POLICY
 
-        # Update the security policy
+        # Update the security policy to a broader (but still unique) scope
         updates = {
             "spec": {
                 "description": UPDATED_DESCRIPTION,
-                "policy": UPDATED_NETWORK_POLICY
+                "policy": _network_policy(f"collection/{scope}*")
             },
         }
         k8s.patch_custom_resource(ref, updates)
@@ -169,5 +188,3 @@ class TestCollection:
         cr = k8s.get_resource(ref)
         latest = security_policy.get(name, type)
         assert latest is not None
-        latest['description'] == UPDATED_DESCRIPTION
-        latest['policy'] == UPDATED_NETWORK_POLICY
