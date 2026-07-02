@@ -38,10 +38,13 @@ UPDATED_DESCRIPTION = "Updated Description"
 
 @pytest.fixture
 def simple_collection(simple_security_policy):
-    # EncryptionType securityPolicy is required to create Collection resource
-    _, _ = simple_security_policy
-    
-    collection_name = random_suffix_name("my-collection", 24)
+    # EncryptionType securityPolicy is required to create Collection resource.
+    # Name the collection under the security policy's unique scope so its
+    # (uniquely scoped) encryption policy covers it without colliding with the
+    # policies created by other concurrent iterations.
+    _, _, scope = simple_security_policy
+
+    collection_name = random_suffix_name(scope, 28)
     replacements = REPLACEMENT_VALUES.copy()
     replacements['COLLECTION_NAME'] = collection_name
     replacements['DESCRIPTION'] = "Initial Description"
