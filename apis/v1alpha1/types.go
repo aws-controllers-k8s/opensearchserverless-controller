@@ -33,6 +33,7 @@ type AccessPolicyDetail struct {
 	LastModifiedDate *int64  `json:"lastModifiedDate,omitempty"`
 	Name             *string `json:"name,omitempty"`
 	PolicyVersion    *string `json:"policyVersion,omitempty"`
+	Type             *string `json:"type_,omitempty"`
 }
 
 // Statistics for an OpenSearch Serverless access policy.
@@ -47,6 +48,7 @@ type AccessPolicySummary struct {
 	LastModifiedDate *int64  `json:"lastModifiedDate,omitempty"`
 	Name             *string `json:"name,omitempty"`
 	PolicyVersion    *string `json:"policyVersion,omitempty"`
+	Type             *string `json:"type_,omitempty"`
 }
 
 // Details about each OpenSearch Serverless collection, including the collection

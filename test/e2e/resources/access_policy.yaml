@@ -1,0 +1,9 @@
+apiVersion: opensearchserverless.services.k8s.aws/v1alpha1
+kind: AccessPolicy
+metadata:
+  name: $ACCESS_POLICY_NAME
+spec:
+  name: $ACCESS_POLICY_NAME
+  description: $ACCESS_POLICY_DESCRIPTION
+  policy: '$ACCESS_POLICY'
+  type: $ACCESS_POLICY_TYPE
