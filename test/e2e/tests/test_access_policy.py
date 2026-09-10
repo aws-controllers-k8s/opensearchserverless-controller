@@ -16,12 +16,12 @@
 import json
 import time
 
-import boto3
 import pytest
 
 from acktest.k8s import condition
 from acktest.k8s import resource as k8s
 from acktest.resources import random_suffix_name
+from acktest.aws.identity import get_account_id
 from e2e import service_marker, CRD_GROUP, CRD_VERSION, load_resource
 from e2e.replacement_values import REPLACEMENT_VALUES
 from e2e import access_policy
@@ -34,11 +34,6 @@ MODIFY_WAIT_AFTER_SECONDS = 30
 # Descriptions
 INITIAL_DESCRIPTION = "Initial Description"
 UPDATED_DESCRIPTION = "Updated Description"
-
-
-def _get_account_id():
-    """Return the AWS account ID of the current caller."""
-    return boto3.client("sts").get_caller_identity()["Account"]
 
 
 def _data_access_policy(principal, collection_resource):
@@ -72,7 +67,7 @@ def simple_access_policy(request):
 
     # Use the current account's root principal so OpenSearch Serverless does
     # not reject the policy with "Cross account principal(s) are not allowed".
-    account_id = _get_account_id()
+    account_id = get_account_id()
     principal = f"arn:aws:iam::{account_id}:root"
     marker = request.node.get_closest_marker("resource_data")
     if marker is not None:
@@ -109,6 +104,9 @@ def simple_access_policy(request):
         period_length=DELETE_WAIT_AFTER_SECONDS,
     )
     assert deleted
+    # Confirm the backing AWS resource is gone, not just the Kubernetes object.
+    time.sleep(DELETE_WAIT_AFTER_SECONDS)
+    assert access_policy.get(ap_name, "data") is None
 
 
 @service_marker
@@ -135,6 +133,7 @@ class TestAccessPolicy:
 
         latest = access_policy.get(name, ap_type)
         assert latest is not None
+        pre_update_version = cr['status']['policyVersion']
 
         # Update the access policy description and policy with a broader scope
         updated_policy = _data_access_policy(principal, f"collection/{scope}*")
@@ -150,8 +149,14 @@ class TestAccessPolicy:
         cr = k8s.get_resource(ref)
         assert cr is not None
         assert cr['spec'].get('description') == UPDATED_DESCRIPTION
+        assert cr['status']['policyVersion'] != pre_update_version
 
         latest = access_policy.get(name, ap_type)
         assert latest is not None
+        assert latest['policyVersion'] != pre_update_version
+        # The service returns the policy document as parsed JSON (whitespace
+        # stripped, keys reordered), so compare structurally against what we
+        # submitted rather than as raw strings.
+        assert latest['policy'] == json.loads(updated_policy)
 
         # Verify deletion happens in fixture teardown
