@@ -72,6 +72,7 @@ rules:
 - apiGroups:
   - opensearchserverless.services.k8s.aws
   resources:
+  - accesspolicies
   - collections
   - securitypolicies
   verbs:
@@ -85,6 +86,7 @@ rules:
 - apiGroups:
   - opensearchserverless.services.k8s.aws
   resources:
+  - accesspolicies/status
   - collections/status
   - securitypolicies/status
   verbs:

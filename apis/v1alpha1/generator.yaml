@@ -1,6 +1,6 @@
 ignore:
   resource_names:
-      - AccessPolicy
+      # - AccessPolicy
       # - Collection
       - LifecyclePolicy
       - SecurityConfig
@@ -10,6 +10,8 @@ ignore:
       - CreateSecurityPolicyOutput.SecurityPolicyDetail.Policy
       - CreateSecurityPolicyOutput.SecurityPolicyDetail.ClientToken
       - CreateSecurityPolicyInput.ClientToken
+      - CreateAccessPolicyOutput.AccessPolicyDetail.Policy
+      - CreateAccessPolicyInput.ClientToken
       - CreateCollectionInput.ClientToken
 operations:
   CreateCollection:
@@ -20,6 +22,22 @@ operations:
     output_wrapper_field_path: CollectionDetails
     resource_name: Collection
 resources:
+  AccessPolicy:
+  # Tags are not supported for AccessPolicy
+  # https://docs.aws.amazon.com/opensearch-service/latest/developerguide/tag-collection.html
+    tags:
+      ignore: true
+    hooks:
+      sdk_read_one_post_set_output:
+        template_path: hooks/access_policy/sdk_read_one_post_set_output.go.tpl
+    fields:
+      Type:
+        go_tag: json:"type"
+        is_immutable: true
+      Policy:
+        is_document: true
+      Name:
+        is_immutable: true
   SecurityPolicy:
   # Tags are not supported for SecurityPolicy 
   # https://docs.aws.amazon.com/opensearch-service/latest/developerguide/tag-collection.html
