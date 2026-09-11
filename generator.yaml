@@ -46,6 +46,10 @@ resources:
     hooks:
       sdk_read_one_post_set_output:
         template_path: hooks/security_policy/sdk_read_one_post_set_output.go.tpl
+      pre_populate_resource_from_annotation:
+        template_path: hooks/security_policy/pre_populate_resource_from_annotation.go.tpl
+      pre_set_resource_identifiers:
+        template_path: hooks/security_policy/pre_set_resource_identifiers.go.tpl
     fields:
       Type:
         go_tag: json:"type"
