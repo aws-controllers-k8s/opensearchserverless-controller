@@ -102,6 +102,7 @@ func (r *resource) SetIdentifiers(identifier *ackv1alpha1.AWSIdentifiers) error 
 			identifier.AdditionalKeys["type"] = legacy
 		}
 	}
+
 	if identifier.NameOrID == "" {
 		return ackerrors.MissingNameIdentifier
 	}
@@ -129,6 +130,7 @@ func (r *resource) PopulateResourceFromAnnotation(fields map[string]string) erro
 	} else if legacy, hasLegacy := fields["type_"]; hasLegacy {
 		fields["type"] = legacy
 	}
+
 	f0, ok := fields["name"]
 	if !ok {
 		return ackerrors.NewTerminalError(fmt.Errorf("required field missing: name"))
