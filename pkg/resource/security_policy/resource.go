@@ -88,12 +88,27 @@ func (r *resource) SetStatus(desired acktypes.AWSResource) {
 // SetIdentifiers sets the Spec or Status field that is referenced as the unique
 // resource identifier
 func (r *resource) SetIdentifiers(identifier *ackv1alpha1.AWSIdentifiers) error {
+	// Backward compatibility: earlier releases of this controller used the
+	// adoption AdditionalKeys entry "type_" (the reserved-word escaped Go name)
+	// rather than the CRD field name "type". Alias the legacy key to the current
+	// one so existing adoption annotations keep working. If both keys are
+	// supplied the annotation is ambiguous, so reject it.
+	if identifier.AdditionalKeys != nil {
+		if _, hasNew := identifier.AdditionalKeys["type"]; hasNew {
+			if _, hasLegacy := identifier.AdditionalKeys["type_"]; hasLegacy {
+				return ackerrors.NewTerminalError(fmt.Errorf("adoption annotation must not set both \"type\" and the deprecated \"type_\""))
+			}
+		} else if legacy, hasLegacy := identifier.AdditionalKeys["type_"]; hasLegacy {
+			identifier.AdditionalKeys["type"] = legacy
+		}
+	}
+
 	if identifier.NameOrID == "" {
 		return ackerrors.MissingNameIdentifier
 	}
 	r.ko.Spec.Name = &identifier.NameOrID
 
-	f1, f1ok := identifier.AdditionalKeys["type_"]
+	f1, f1ok := identifier.AdditionalKeys["type"]
 	if f1ok {
 		r.ko.Spec.Type = aws.String(f1)
 	}
@@ -103,14 +118,27 @@ func (r *resource) SetIdentifiers(identifier *ackv1alpha1.AWSIdentifiers) error 
 
 // PopulateResourceFromAnnotation populates the fields passed from adoption annotation
 func (r *resource) PopulateResourceFromAnnotation(fields map[string]string) error {
+	// Backward compatibility: earlier releases of this controller generated the
+	// adoption annotation key for the Type field as "type_" (the reserved-word
+	// escaped Go name) rather than the CRD field name "type". Alias the legacy
+	// key to the current one so existing adoption annotations keep working. If
+	// both keys are supplied the annotation is ambiguous, so reject it.
+	if _, hasNew := fields["type"]; hasNew {
+		if _, hasLegacy := fields["type_"]; hasLegacy {
+			return ackerrors.NewTerminalError(fmt.Errorf("adoption annotation must not set both \"type\" and the deprecated \"type_\""))
+		}
+	} else if legacy, hasLegacy := fields["type_"]; hasLegacy {
+		fields["type"] = legacy
+	}
+
 	f0, ok := fields["name"]
 	if !ok {
 		return ackerrors.NewTerminalError(fmt.Errorf("required field missing: name"))
 	}
 	r.ko.Spec.Name = &f0
-	f1, ok := fields["type_"]
+	f1, ok := fields["type"]
 	if !ok {
-		return ackerrors.NewTerminalError(fmt.Errorf("required field missing: type_"))
+		return ackerrors.NewTerminalError(fmt.Errorf("required field missing: type"))
 	}
 	r.ko.Spec.Type = &f1
 
