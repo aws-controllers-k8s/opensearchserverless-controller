@@ -2,7 +2,7 @@ ignore:
   resource_names:
       # - AccessPolicy
       # - Collection
-      - LifecyclePolicy
+      # - LifecyclePolicy
       - SecurityConfig
       # - SecurityPolicy
       - VpcEndpoint
@@ -13,6 +13,9 @@ ignore:
       - CreateAccessPolicyOutput.AccessPolicyDetail.Policy
       - CreateAccessPolicyInput.ClientToken
       - CreateCollectionInput.ClientToken
+      - CreateLifecyclePolicyOutput.LifecyclePolicyDetail.Policy
+      - CreateLifecyclePolicyInput.ClientToken
+      - UpdateLifecyclePolicyOutput.LifecyclePolicyDetail.Policy
 operations:
   CreateCollection:
     output_wrapper_field_path: CreateCollectionDetail
@@ -57,6 +60,22 @@ resources:
       Policy:
         is_document: true
       Name:
+        is_immutable: true
+  LifecyclePolicy:
+  # Tags are not supported for LifecyclePolicy
+  # https://docs.aws.amazon.com/opensearch-service/latest/developerguide/tag-collection.html
+    tags:
+      ignore: true
+    find_operation:
+      custom_method_name: customFindLifecyclePolicy
+    fields:
+      Type:
+        go_tag: json:"type"
+        is_immutable: true
+      Policy:
+        is_document: true
+      Name:
+        is_primary_key: true
         is_immutable: true
   Collection:
     is_arn_primary_key: true

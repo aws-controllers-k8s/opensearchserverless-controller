@@ -74,6 +74,7 @@ rules:
   resources:
   - accesspolicies
   - collections
+  - lifecyclepolicies
   - securitypolicies
   verbs:
   - create
@@ -88,6 +89,7 @@ rules:
   resources:
   - accesspolicies/status
   - collections/status
+  - lifecyclepolicies/status
   - securitypolicies/status
   verbs:
   - get
