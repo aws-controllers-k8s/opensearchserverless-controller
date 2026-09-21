@@ -24,6 +24,12 @@ operations:
     - List
     output_wrapper_field_path: CollectionDetails
     resource_name: Collection
+  BatchGetLifecyclePolicy:
+    operation_type:
+    - List
+    output_wrapper_field_path: LifecyclePolicyDetails
+    resource_name: LifecyclePolicy
+    input_wrapper_field_path: Identifiers
 resources:
   AccessPolicy:
   # Tags are not supported for AccessPolicy
@@ -66,8 +72,11 @@ resources:
   # https://docs.aws.amazon.com/opensearch-service/latest/developerguide/tag-collection.html
     tags:
       ignore: true
-    find_operation:
-      custom_method_name: customFindLifecyclePolicy
+    hooks:
+      sdk_read_many_post_request:
+        template_path: hooks/lifecycle_policy/sdk_read_many_post_request.go.tpl
+      sdk_read_many_post_set_output:
+        template_path: hooks/lifecycle_policy/sdk_read_many_post_set_output.go.tpl
     fields:
       Type:
         go_tag: json:"type"

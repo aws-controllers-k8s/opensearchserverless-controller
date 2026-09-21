@@ -93,9 +93,9 @@ func (r *resource) SetIdentifiers(identifier *ackv1alpha1.AWSIdentifiers) error 
 	}
 	r.ko.Spec.Name = &identifier.NameOrID
 
-	f3, f3ok := identifier.AdditionalKeys["type"]
-	if f3ok {
-		r.ko.Spec.Type = aws.String(f3)
+	f1, f1ok := identifier.AdditionalKeys["type"]
+	if f1ok {
+		r.ko.Spec.Type = aws.String(f1)
 	}
 
 	return nil
@@ -108,11 +108,11 @@ func (r *resource) PopulateResourceFromAnnotation(fields map[string]string) erro
 		return ackerrors.NewTerminalError(fmt.Errorf("required field missing: name"))
 	}
 	r.ko.Spec.Name = &primaryKey
-	f3, ok := fields["type"]
+	f1, ok := fields["type"]
 	if !ok {
 		return ackerrors.NewTerminalError(fmt.Errorf("required field missing: type"))
 	}
-	r.ko.Spec.Type = &f3
+	r.ko.Spec.Type = &f1
 
 	return nil
 }

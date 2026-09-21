@@ -31,6 +31,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	svcsdk "github.com/aws/aws-sdk-go-v2/service/opensearchserverless"
 	svcsdktypes "github.com/aws/aws-sdk-go-v2/service/opensearchserverless/types"
+	smithy "github.com/aws/smithy-go"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -56,8 +57,138 @@ var (
 func (rm *resourceManager) sdkFind(
 	ctx context.Context,
 	r *resource,
-) (*resource, error) {
-	return rm.customFindLifecyclePolicy(ctx, r)
+) (latest *resource, err error) {
+	rlog := ackrtlog.FromContext(ctx)
+	exit := rlog.Trace("rm.sdkFind")
+	defer func() {
+		exit(err)
+	}()
+	// If any required fields in the input shape are missing, AWS resource is
+	// not created yet. Return NotFound here to indicate to callers that the
+	// resource isn't yet created.
+	if rm.requiredFieldsMissingFromReadManyInput(r) {
+		return nil, ackerr.NotFound
+	}
+
+	input, err := rm.newListRequestPayload(r)
+	if err != nil {
+		return nil, err
+	}
+	var resp *svcsdk.BatchGetLifecyclePolicyOutput
+	resp, err = rm.sdkapi.BatchGetLifecyclePolicy(ctx, input)
+	// BatchGetLifecyclePolicy signals a missing policy in the response body
+	// (LifecyclePolicyErrorDetails[].ErrorCode == "NOT_FOUND") rather than via
+	// a top-level API exception, so the generic 404-exception check below never
+	// fires. Translate the in-body NOT_FOUND into ackerr.NotFound here.
+	if err == nil && resp != nil {
+		for _, errDetail := range resp.LifecyclePolicyErrorDetails {
+			if errDetail.ErrorCode != nil && *errDetail.ErrorCode == "NOT_FOUND" {
+				return nil, ackerr.NotFound
+			}
+		}
+		if len(resp.LifecyclePolicyDetails) == 0 {
+			return nil, ackerr.NotFound
+		}
+	}
+
+	rm.metrics.RecordAPICall("READ_MANY", "BatchGetLifecyclePolicy", err)
+	if err != nil {
+		var awsErr smithy.APIError
+		if errors.As(err, &awsErr) && awsErr.ErrorCode() == "UNKNOWN" {
+			return nil, ackerr.NotFound
+		}
+		return nil, err
+	}
+
+	// Merge in the information we read from the API call above to the copy of
+	// the original Kubernetes object we passed to the function
+	ko := r.ko.DeepCopy()
+
+	found := false
+	for _, elem := range resp.LifecyclePolicyDetails {
+		if elem.CreatedDate != nil {
+			ko.Status.CreatedDate = elem.CreatedDate
+		} else {
+			ko.Status.CreatedDate = nil
+		}
+		if elem.Description != nil {
+			ko.Spec.Description = elem.Description
+		} else {
+			ko.Spec.Description = nil
+		}
+		if elem.LastModifiedDate != nil {
+			ko.Status.LastModifiedDate = elem.LastModifiedDate
+		} else {
+			ko.Status.LastModifiedDate = nil
+		}
+		if elem.Name != nil {
+			ko.Spec.Name = elem.Name
+		} else {
+			ko.Spec.Name = nil
+		}
+		if elem.PolicyVersion != nil {
+			ko.Status.PolicyVersion = elem.PolicyVersion
+		} else {
+			ko.Status.PolicyVersion = nil
+		}
+		if elem.Type != "" {
+			ko.Spec.Type = aws.String(string(elem.Type))
+		} else {
+			ko.Spec.Type = nil
+		}
+		found = true
+		break
+	}
+	if !found {
+		return nil, ackerr.NotFound
+	}
+
+	rm.setStatusDefaults(ko)
+	// The Policy field is a Smithy document (document.Interface). The generic
+	// output-setter cannot marshal it, so populate Spec.Policy from the batch
+	// detail here. NOT_FOUND / empty-result cases already returned above, so a
+	// detail is present.
+	if len(resp.LifecyclePolicyDetails) > 0 {
+		detail := resp.LifecyclePolicyDetails[0]
+		if detail.Policy != nil {
+			policyBytes, err := detail.Policy.MarshalSmithyDocument()
+			if err != nil {
+				return &resource{ko}, err
+			}
+			ko.Spec.Policy = aws.String(string(policyBytes))
+		}
+	}
+
+	return &resource{ko}, nil
+}
+
+// requiredFieldsMissingFromReadManyInput returns true if there are any fields
+// for the ReadMany Input shape that are required but not present in the
+// resource's Spec or Status
+func (rm *resourceManager) requiredFieldsMissingFromReadManyInput(
+	r *resource,
+) bool {
+	return r.ko.Spec.Name == nil || r.ko.Spec.Type == nil
+
+}
+
+// newListRequestPayload returns SDK-specific struct for the HTTP request
+// payload of the List API call for the resource
+func (rm *resourceManager) newListRequestPayload(
+	r *resource,
+) (*svcsdk.BatchGetLifecyclePolicyInput, error) {
+	res := &svcsdk.BatchGetLifecyclePolicyInput{}
+
+	fw := &svcsdktypes.LifecyclePolicyIdentifier{}
+	if r.ko.Spec.Name != nil {
+		fw.Name = r.ko.Spec.Name
+	}
+	if r.ko.Spec.Type != nil {
+		fw.Type = svcsdktypes.LifecyclePolicyType(*r.ko.Spec.Type)
+	}
+	res.Identifiers = []svcsdktypes.LifecyclePolicyIdentifier{*fw}
+
+	return res, nil
 }
 
 // sdkCreate creates the supplied resource in the backend AWS service API and
