@@ -19,6 +19,7 @@ rules:
   - accesspolicies
   - collections
   - lifecyclepolicies
+  - securityconfigs
   - securitypolicies
   verbs:
   - get
