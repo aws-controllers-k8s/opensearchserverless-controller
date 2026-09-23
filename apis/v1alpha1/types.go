@@ -119,6 +119,7 @@ type EffectiveLifecyclePolicyDetail struct {
 	PolicyName      *string `json:"policyName,omitempty"`
 	Resource        *string `json:"resource,omitempty"`
 	RetentionPeriod *string `json:"retentionPeriod,omitempty"`
+	Type            *string `json:"type_,omitempty"`
 }
 
 // Error information for an OpenSearch Serverless request.
@@ -126,6 +127,7 @@ type EffectiveLifecyclePolicyErrorDetail struct {
 	ErrorCode    *string `json:"errorCode,omitempty"`
 	ErrorMessage *string `json:"errorMessage,omitempty"`
 	Resource     *string `json:"resource,omitempty"`
+	Type         *string `json:"type_,omitempty"`
 }
 
 // Describes IAM Identity Center options for an OpenSearch Serverless security
@@ -142,6 +144,7 @@ type LifecyclePolicyDetail struct {
 	LastModifiedDate *int64  `json:"lastModifiedDate,omitempty"`
 	Name             *string `json:"name,omitempty"`
 	PolicyVersion    *string `json:"policyVersion,omitempty"`
+	Type             *string `json:"type_,omitempty"`
 }
 
 // Error information for an OpenSearch Serverless request.
@@ -149,11 +152,18 @@ type LifecyclePolicyErrorDetail struct {
 	ErrorCode    *string `json:"errorCode,omitempty"`
 	ErrorMessage *string `json:"errorMessage,omitempty"`
 	Name         *string `json:"name,omitempty"`
+	Type         *string `json:"type_,omitempty"`
 }
 
 // The unique identifiers of policy types and policy names.
 type LifecyclePolicyIdentifier struct {
 	Name *string `json:"name,omitempty"`
+	Type *string `json:"type_,omitempty"`
+}
+
+// The unique identifiers of policy types and resource names.
+type LifecyclePolicyResourceIdentifier struct {
+	Type *string `json:"type_,omitempty"`
 }
 
 // Statistics for an OpenSearch Serverless lifecycle policy.
@@ -168,6 +178,7 @@ type LifecyclePolicySummary struct {
 	LastModifiedDate *int64  `json:"lastModifiedDate,omitempty"`
 	Name             *string `json:"name,omitempty"`
 	PolicyVersion    *string `json:"policyVersion,omitempty"`
+	Type             *string `json:"type_,omitempty"`
 }
 
 // Describes SAML options for an OpenSearch Serverless security configuration

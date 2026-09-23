@@ -43,6 +43,7 @@ import (
 
 	_ "github.com/aws-controllers-k8s/opensearchserverless-controller/pkg/resource/access_policy"
 	_ "github.com/aws-controllers-k8s/opensearchserverless-controller/pkg/resource/collection"
+	_ "github.com/aws-controllers-k8s/opensearchserverless-controller/pkg/resource/lifecycle_policy"
 	_ "github.com/aws-controllers-k8s/opensearchserverless-controller/pkg/resource/security_policy"
 
 	"github.com/aws-controllers-k8s/opensearchserverless-controller/pkg/version"

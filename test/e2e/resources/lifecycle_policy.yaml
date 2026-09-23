@@ -1,0 +1,9 @@
+apiVersion: opensearchserverless.services.k8s.aws/v1alpha1
+kind: LifecyclePolicy
+metadata:
+  name: $LIFECYCLE_POLICY_NAME
+spec:
+  name: $LIFECYCLE_POLICY_NAME
+  description: $LIFECYCLE_POLICY_DESCRIPTION
+  policy: '$LIFECYCLE_POLICY'
+  type: $LIFECYCLE_POLICY_TYPE
