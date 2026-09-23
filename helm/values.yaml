@@ -153,6 +153,7 @@ reconcile:
     - AccessPolicy
     - Collection
     - LifecyclePolicy
+    - SecurityConfig
     - SecurityPolicy
 
 serviceAccount:

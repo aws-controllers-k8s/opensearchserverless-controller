@@ -75,6 +75,7 @@ rules:
   - accesspolicies
   - collections
   - lifecyclepolicies
+  - securityconfigs
   - securitypolicies
   verbs:
   - create
@@ -90,6 +91,7 @@ rules:
   - accesspolicies/status
   - collections/status
   - lifecyclepolicies/status
+  - securityconfigs/status
   - securitypolicies/status
   verbs:
   - get

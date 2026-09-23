@@ -107,6 +107,14 @@ type CreateCollectionDetail struct {
 	Type             *string `json:"type_,omitempty"`
 }
 
+// Describes IAM Identity Center options for creating an OpenSearch Serverless
+// security configuration in the form of a key-value map.
+type CreateIAMIdentityCenterConfigOptions struct {
+	GroupAttribute *string `json:"groupAttribute,omitempty"`
+	InstanceARN    *string `json:"instanceARN,omitempty"`
+	UserAttribute  *string `json:"userAttribute,omitempty"`
+}
+
 // Details about a deleted OpenSearch Serverless collection.
 type DeleteCollectionDetail struct {
 	ID     *string `json:"id,omitempty"`
@@ -133,8 +141,12 @@ type EffectiveLifecyclePolicyErrorDetail struct {
 // Describes IAM Identity Center options for an OpenSearch Serverless security
 // configuration in the form of a key-value map.
 type IAMIdentityCenterConfigOptions struct {
+	ApplicationARN         *string `json:"applicationARN,omitempty"`
 	ApplicationDescription *string `json:"applicationDescription,omitempty"`
 	ApplicationName        *string `json:"applicationName,omitempty"`
+	GroupAttribute         *string `json:"groupAttribute,omitempty"`
+	InstanceARN            *string `json:"instanceARN,omitempty"`
+	UserAttribute          *string `json:"userAttribute,omitempty"`
 }
 
 // Details about an OpenSearch Serverless lifecycle policy.
@@ -184,14 +196,27 @@ type LifecyclePolicySummary struct {
 // Describes SAML options for an OpenSearch Serverless security configuration
 // in the form of a key-value map.
 type SamlConfigOptions struct {
-	SessionTimeout *int64 `json:"sessionTimeout,omitempty"`
+	GroupAttribute               *string `json:"groupAttribute,omitempty"`
+	Metadata                     *string `json:"metadata,omitempty"`
+	OpenSearchServerlessEntityID *string `json:"openSearchServerlessEntityID,omitempty"`
+	SessionTimeout               *int64  `json:"sessionTimeout,omitempty"`
+	UserAttribute                *string `json:"userAttribute,omitempty"`
 }
 
 // Details about a security configuration for OpenSearch Serverless.
 type SecurityConfigDetail struct {
-	ConfigVersion    *string `json:"configVersion,omitempty"`
-	CreatedDate      *int64  `json:"createdDate,omitempty"`
-	LastModifiedDate *int64  `json:"lastModifiedDate,omitempty"`
+	ConfigVersion *string `json:"configVersion,omitempty"`
+	CreatedDate   *int64  `json:"createdDate,omitempty"`
+	Description   *string `json:"description,omitempty"`
+	// Describes IAM Identity Center options for an OpenSearch Serverless security
+	// configuration in the form of a key-value map.
+	IAMIdentityCenterOptions *IAMIdentityCenterConfigOptions `json:"iamIdentityCenterOptions,omitempty"`
+	ID                       *string                         `json:"id,omitempty"`
+	LastModifiedDate         *int64                          `json:"lastModifiedDate,omitempty"`
+	// Describes SAML options for an OpenSearch Serverless security configuration
+	// in the form of a key-value map.
+	SamlOptions *SamlConfigOptions `json:"samlOptions,omitempty"`
+	Type        *string            `json:"type_,omitempty"`
 }
 
 // Statistics for an OpenSearch Serverless security configuration.
@@ -203,7 +228,10 @@ type SecurityConfigStats struct {
 type SecurityConfigSummary struct {
 	ConfigVersion    *string `json:"configVersion,omitempty"`
 	CreatedDate      *int64  `json:"createdDate,omitempty"`
+	Description      *string `json:"description,omitempty"`
+	ID               *string `json:"id,omitempty"`
 	LastModifiedDate *int64  `json:"lastModifiedDate,omitempty"`
+	Type             *string `json:"type_,omitempty"`
 }
 
 // Details about an OpenSearch Serverless security policy.
@@ -248,6 +276,13 @@ type UpdateCollectionDetail struct {
 	Name             *string `json:"name,omitempty"`
 	Status           *string `json:"status,omitempty"`
 	Type             *string `json:"type_,omitempty"`
+}
+
+// Describes IAM Identity Center options for updating an OpenSearch Serverless
+// security configuration in the form of a key-value map.
+type UpdateIAMIdentityCenterConfigOptions struct {
+	GroupAttribute *string `json:"groupAttribute,omitempty"`
+	UserAttribute  *string `json:"userAttribute,omitempty"`
 }
 
 // Update details for an OpenSearch Serverless-managed interface endpoint.

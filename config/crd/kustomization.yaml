@@ -5,4 +5,5 @@ resources:
   - bases/opensearchserverless.services.k8s.aws_accesspolicies.yaml
   - bases/opensearchserverless.services.k8s.aws_collections.yaml
   - bases/opensearchserverless.services.k8s.aws_lifecyclepolicies.yaml
+  - bases/opensearchserverless.services.k8s.aws_securityconfigs.yaml
   - bases/opensearchserverless.services.k8s.aws_securitypolicies.yaml
