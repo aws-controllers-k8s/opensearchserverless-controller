@@ -3,7 +3,7 @@ ignore:
       # - AccessPolicy
       # - Collection
       # - LifecyclePolicy
-      - SecurityConfig
+      # - SecurityConfig
       # - SecurityPolicy
       - VpcEndpoint
   field_paths:
@@ -16,6 +16,7 @@ ignore:
       - CreateLifecyclePolicyOutput.LifecyclePolicyDetail.Policy
       - CreateLifecyclePolicyInput.ClientToken
       - UpdateLifecyclePolicyOutput.LifecyclePolicyDetail.Policy
+      - CreateSecurityConfigInput.ClientToken
 operations:
   CreateCollection:
     output_wrapper_field_path: CreateCollectionDetail
@@ -86,6 +87,22 @@ resources:
       Name:
         is_primary_key: true
         is_immutable: true
+  SecurityConfig:
+  # Tags are not supported for SecurityConfig
+  # https://docs.aws.amazon.com/opensearch-service/latest/developerguide/tag-collection.html
+    tags:
+      ignore: true
+    fields:
+      Type:
+        go_tag: json:"type"
+        is_immutable: true
+      Name:
+        is_immutable: true
+    renames:
+      operations:
+        UpdateSecurityConfig:
+          input_fields:
+            IamIdentityCenterOptionsUpdates: IamIdentityCenterOptions
   Collection:
     is_arn_primary_key: true
     fields:

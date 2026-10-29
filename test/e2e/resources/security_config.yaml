@@ -1,0 +1,11 @@
+apiVersion: opensearchserverless.services.k8s.aws/v1alpha1
+kind: SecurityConfig
+metadata:
+  name: $SECURITY_CONFIG_NAME
+spec:
+  name: $SECURITY_CONFIG_NAME
+  description: $SECURITY_CONFIG_DESCRIPTION
+  type: $SECURITY_CONFIG_TYPE
+  samlOptions:
+    metadata: '$SECURITY_CONFIG_SAML_METADATA'
+    sessionTimeout: $SECURITY_CONFIG_SESSION_TIMEOUT
