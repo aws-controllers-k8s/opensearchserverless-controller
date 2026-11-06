@@ -20,6 +20,7 @@ import (
 
 	ackcompare "github.com/aws-controllers-k8s/runtime/pkg/compare"
 	acktags "github.com/aws-controllers-k8s/runtime/pkg/tags"
+	"k8s.io/apimachinery/pkg/api/equality"
 )
 
 // Hack to avoid import errors during build...
@@ -41,6 +42,16 @@ func newResourceDelta(
 		return delta
 	}
 
+	if ackcompare.HasNilDifference(a.ko.Spec.CollectionGroupName, b.ko.Spec.CollectionGroupName) {
+		delta.Add("Spec.CollectionGroupName", a.ko.Spec.CollectionGroupName, b.ko.Spec.CollectionGroupName)
+	} else if a.ko.Spec.CollectionGroupName != nil && b.ko.Spec.CollectionGroupName != nil {
+		if *a.ko.Spec.CollectionGroupName != *b.ko.Spec.CollectionGroupName {
+			delta.Add("Spec.CollectionGroupName", a.ko.Spec.CollectionGroupName, b.ko.Spec.CollectionGroupName)
+		}
+	}
+	if !equality.Semantic.Equalities.DeepEqual(a.ko.Spec.CollectionGroupRef, b.ko.Spec.CollectionGroupRef) {
+		delta.Add("Spec.CollectionGroupRef", a.ko.Spec.CollectionGroupRef, b.ko.Spec.CollectionGroupRef)
+	}
 	if ackcompare.HasNilDifference(a.ko.Spec.Description, b.ko.Spec.Description) {
 		delta.Add("Spec.Description", a.ko.Spec.Description, b.ko.Spec.Description)
 	} else if a.ko.Spec.Description != nil && b.ko.Spec.Description != nil {

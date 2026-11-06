@@ -39,6 +39,32 @@ spec:
           spec:
             description: CollectionSpec defines the desired state of Collection.
             properties:
+              collectionGroupName:
+                description: |-
+                  The name of the collection group to associate with the collection.
+
+                  Regex Pattern: `^[a-z][a-z0-9-]+$`
+                type: string
+                x-kubernetes-validations:
+                - message: Value is immutable once set
+                  rule: self == oldSelf
+              collectionGroupRef:
+                description: "AWSResourceReferenceWrapper provides a wrapper around
+                  *AWSResourceReference\ntype to provide more user friendly syntax
+                  for references using 'from' field\nEx:\nAPIIDRef:\n\n\tfrom:\n\t
+                  \ name: my-api"
+                properties:
+                  from:
+                    description: |-
+                      AWSResourceReference provides all the values necessary to reference another
+                      k8s resource for finding the identifier(Id/ARN/Name)
+                    properties:
+                      name:
+                        type: string
+                      namespace:
+                        type: string
+                    type: object
+                type: object
               description:
                 description: Description of the collection.
                 type: string
@@ -46,7 +72,7 @@ spec:
                 description: |-
                   Name of the collection.
 
-                  Regex Pattern: `^[a-z][a-z0-9-]+$`
+                  Regex Pattern: `^[a-z][a-z0-9_-]+$`
                 type: string
                 x-kubernetes-validations:
                 - message: Value is immutable once set

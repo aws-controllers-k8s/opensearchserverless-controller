@@ -73,6 +73,7 @@ rules:
   - opensearchserverless.services.k8s.aws
   resources:
   - accesspolicies
+  - collectiongroups
   - collections
   - lifecyclepolicies
   - securitypolicies
@@ -88,6 +89,7 @@ rules:
   - opensearchserverless.services.k8s.aws
   resources:
   - accesspolicies/status
+  - collectiongroups/status
   - collections/status
   - lifecyclepolicies/status
   - securitypolicies/status

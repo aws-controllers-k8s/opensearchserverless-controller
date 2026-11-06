@@ -3,6 +3,10 @@ ignore:
       # - AccessPolicy
       # - Collection
       # - LifecyclePolicy
+      # The SDK upgrade is scoped to CollectionGroup and Collection membership.
+      - Index
+      - IngestionJob
+      - IngestionStream
       - SecurityConfig
       # - SecurityPolicy
       - VpcEndpoint
@@ -13,6 +17,22 @@ ignore:
       - CreateAccessPolicyOutput.AccessPolicyDetail.Policy
       - CreateAccessPolicyInput.ClientToken
       - CreateCollectionInput.ClientToken
+      - CreateCollectionInput.VectorOptions
+      - CreateCollectionInput.EncryptionConfig
+      - CreateCollectionInput.DeletionProtection
+      - CreateCollectionOutput.CreateCollectionDetail.VectorOptions
+      - CreateCollectionOutput.CreateCollectionDetail.DeletionProtection
+      - BatchGetCollectionOutput.CollectionDetails.VectorOptions
+      - BatchGetCollectionOutput.CollectionDetails.DeletionProtection
+      - BatchGetCollectionOutput.CollectionDetails.FipsEndpoints
+      - UpdateCollectionInput.VectorOptions
+      - UpdateCollectionInput.EncryptionConfig
+      - UpdateCollectionInput.DeletionProtection
+      - UpdateCollectionOutput.UpdateCollectionDetail.VectorOptions
+      - UpdateCollectionOutput.UpdateCollectionDetail.DeletionProtection
+      - CreateCollectionGroupInput.ClientToken
+      - UpdateCollectionGroupInput.ClientToken
+      - UpdateCollectionGroupOutput.UpdateCollectionGroupDetail.LastModifiedDate
       - CreateLifecyclePolicyOutput.LifecyclePolicyDetail.Policy
       - CreateLifecyclePolicyInput.ClientToken
       - UpdateLifecyclePolicyOutput.LifecyclePolicyDetail.Policy
@@ -24,6 +44,15 @@ operations:
     - List
     output_wrapper_field_path: CollectionDetails
     resource_name: Collection
+  CreateCollectionGroup:
+    output_wrapper_field_path: CreateCollectionGroupDetail
+  BatchGetCollectionGroup:
+    operation_type:
+    - List
+    output_wrapper_field_path: CollectionGroupDetails
+    resource_name: CollectionGroup
+  UpdateCollectionGroup:
+    output_wrapper_field_path: UpdateCollectionGroupDetail
   BatchGetLifecyclePolicy:
     operation_type:
     - List
@@ -96,8 +125,83 @@ resources:
         is_immutable: true
       StandbyReplicas:
         is_immutable: true
+      # The public API accepts association only during CreateCollection.
+      # Generic gap: optional create-only fields and reference wrappers can
+      # escape immutability checks on absence/presence transitions. Suggested
+      # code-generator issue: enforce optional field/reference immutability.
+      CollectionGroupName:
+        is_immutable: true
+        references:
+          resource: CollectionGroup
+          path: Spec.Name
     hooks:
       sdk_update_pre_build_request:
         template_path: hooks/collection/sdk_update_pre_build_request.go.tpl
       sdk_read_many_post_set_output:
         template_path: hooks/collection/sdk_read_many_post_set_output.go.tpl
+  CollectionGroup:
+    exceptions:
+      errors:
+        404:
+          code: ResourceNotFoundException
+    update_operation:
+      # Capacity updates replace the whole object. Do not resend it on a
+      # description-only update; nested changes still send every desired limit.
+      omit_unchanged_fields: true
+    fields:
+      ID:
+        is_primary_key: true
+      Name:
+        is_immutable: true
+      StandbyReplicas:
+        is_immutable: true
+      Generation:
+        is_immutable: true
+        late_initialize:
+          skip_incomplete_check: {}
+      Description:
+        late_initialize:
+          skip_incomplete_check: {}
+      Tags:
+        # Create responses can omit modeled tags. Preserve desired tags in
+        # operation results; ListTagsForResource supplies authoritative reads.
+        # Boolean ignore skips output setters while retaining create inputs.
+        set:
+        - ignore: true
+      CapacityLimits:
+        late_initialize:
+          skip_incomplete_check: {}
+      CapacityLimits.MaxIndexingCapacityInOCU:
+        late_initialize:
+          skip_incomplete_check: {}
+      CapacityLimits.MaxSearchCapacityInOCU:
+        late_initialize:
+          skip_incomplete_check: {}
+      CapacityLimits.MinIndexingCapacityInOCU:
+        late_initialize:
+          skip_incomplete_check: {}
+      CapacityLimits.MinSearchCapacityInOCU:
+        late_initialize:
+          skip_incomplete_check: {}
+      CurrentCapacity:
+        is_read_only: true
+        from:
+          operation: BatchGetCollectionGroup
+          path: CollectionGroupDetails.CurrentCapacity
+      NumberOfCollections:
+        is_read_only: true
+        from:
+          operation: BatchGetCollectionGroup
+          path: CollectionGroupDetails.NumberOfCollections
+      MemberCollections:
+        is_read_only: true
+        from:
+          operation: ListCollections
+          path: CollectionSummaries
+    hooks:
+      sdk_read_many_post_request:
+        template_path: hooks/collection_group/sdk_read_many_post_request.go.tpl
+      sdk_read_many_post_set_output:
+        template_path: hooks/collection_group/sdk_read_many_post_set_output.go.tpl
+      sdk_update_pre_build_request:
+        template_path: hooks/collection_group/sdk_update_pre_build_request.go.tpl

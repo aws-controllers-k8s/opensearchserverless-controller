@@ -11,6 +11,7 @@ rules:
   resources:
   - accesspolicies
   - collections
+  - collectiongroups
   - lifecyclepolicies
   - securitypolicies
   verbs:
