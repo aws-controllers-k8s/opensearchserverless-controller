@@ -21,13 +21,23 @@ const (
 	AccessPolicyType_data AccessPolicyType = "data"
 )
 
+type AutoscalingStatus string
+
+const (
+	AutoscalingStatus_ACTION_SCALING_UP   AutoscalingStatus = "ACTION_SCALING_UP"
+	AutoscalingStatus_ACTION_SCALING_DOWN AutoscalingStatus = "ACTION_SCALING_DOWN"
+	AutoscalingStatus_NO_ACTION           AutoscalingStatus = "NO_ACTION"
+)
+
 type CollectionStatus_SDK string
 
 const (
-	CollectionStatus_SDK_CREATING CollectionStatus_SDK = "CREATING"
-	CollectionStatus_SDK_DELETING CollectionStatus_SDK = "DELETING"
-	CollectionStatus_SDK_ACTIVE   CollectionStatus_SDK = "ACTIVE"
-	CollectionStatus_SDK_FAILED   CollectionStatus_SDK = "FAILED"
+	CollectionStatus_SDK_CREATING      CollectionStatus_SDK = "CREATING"
+	CollectionStatus_SDK_UPDATING      CollectionStatus_SDK = "UPDATING"
+	CollectionStatus_SDK_DELETING      CollectionStatus_SDK = "DELETING"
+	CollectionStatus_SDK_ACTIVE        CollectionStatus_SDK = "ACTIVE"
+	CollectionStatus_SDK_FAILED        CollectionStatus_SDK = "FAILED"
+	CollectionStatus_SDK_UPDATE_FAILED CollectionStatus_SDK = "UPDATE_FAILED"
 )
 
 type CollectionType string
@@ -36,6 +46,13 @@ const (
 	CollectionType_SEARCH       CollectionType = "SEARCH"
 	CollectionType_TIMESERIES   CollectionType = "TIMESERIES"
 	CollectionType_VECTORSEARCH CollectionType = "VECTORSEARCH"
+)
+
+type DeletionProtection string
+
+const (
+	DeletionProtection_ENABLED  DeletionProtection = "ENABLED"
+	DeletionProtection_DISABLED DeletionProtection = "DISABLED"
 )
 
 type IAMIdentityCenterGroupAttribute string
@@ -51,6 +68,68 @@ const (
 	IAMIdentityCenterUserAttribute_UserId   IAMIdentityCenterUserAttribute = "UserId"
 	IAMIdentityCenterUserAttribute_UserName IAMIdentityCenterUserAttribute = "UserName"
 	IAMIdentityCenterUserAttribute_Email    IAMIdentityCenterUserAttribute = "Email"
+)
+
+type IngestionAlertCode string
+
+const (
+	IngestionAlertCode_SOURCE_ACCESS_DENIED           IngestionAlertCode = "SOURCE_ACCESS_DENIED"
+	IngestionAlertCode_SOURCE_RESOURCE_NOT_FOUND      IngestionAlertCode = "SOURCE_RESOURCE_NOT_FOUND"
+	IngestionAlertCode_DESTINATION_ACCESS_DENIED      IngestionAlertCode = "DESTINATION_ACCESS_DENIED"
+	IngestionAlertCode_DESTINATION_RESOURCE_NOT_FOUND IngestionAlertCode = "DESTINATION_RESOURCE_NOT_FOUND"
+	IngestionAlertCode_INTERNAL_SERVER_ERROR          IngestionAlertCode = "INTERNAL_SERVER_ERROR"
+)
+
+type IngestionFailureCode string
+
+const (
+	IngestionFailureCode_SOURCE_ACCESS_DENIED           IngestionFailureCode = "SOURCE_ACCESS_DENIED"
+	IngestionFailureCode_SOURCE_RESOURCE_NOT_FOUND      IngestionFailureCode = "SOURCE_RESOURCE_NOT_FOUND"
+	IngestionFailureCode_DESTINATION_ACCESS_DENIED      IngestionFailureCode = "DESTINATION_ACCESS_DENIED"
+	IngestionFailureCode_DESTINATION_RESOURCE_NOT_FOUND IngestionFailureCode = "DESTINATION_RESOURCE_NOT_FOUND"
+	IngestionFailureCode_INTERNAL_SERVER_ERROR          IngestionFailureCode = "INTERNAL_SERVER_ERROR"
+)
+
+type IngestionJobStatus string
+
+const (
+	IngestionJobStatus_CREATING      IngestionJobStatus = "CREATING"
+	IngestionJobStatus_ACTIVE        IngestionJobStatus = "ACTIVE"
+	IngestionJobStatus_COMPLETED     IngestionJobStatus = "COMPLETED"
+	IngestionJobStatus_CANCELLING    IngestionJobStatus = "CANCELLING"
+	IngestionJobStatus_CANCELLED     IngestionJobStatus = "CANCELLED"
+	IngestionJobStatus_FAILED        IngestionJobStatus = "FAILED"
+	IngestionJobStatus_CREATE_FAILED IngestionJobStatus = "CREATE_FAILED"
+	IngestionJobStatus_CANCEL_FAILED IngestionJobStatus = "CANCEL_FAILED"
+)
+
+type IngestionState string
+
+const (
+	IngestionState_STARTING              IngestionState = "STARTING"
+	IngestionState_SCANNING              IngestionState = "SCANNING"
+	IngestionState_INGESTION_IN_PROGRESS IngestionState = "INGESTION_IN_PROGRESS"
+	IngestionState_INGESTION_COMPLETE    IngestionState = "INGESTION_COMPLETE"
+	IngestionState_STOPPED               IngestionState = "STOPPED"
+	IngestionState_FAILED                IngestionState = "FAILED"
+)
+
+type IngestionStreamStatus string
+
+const (
+	IngestionStreamStatus_CREATING      IngestionStreamStatus = "CREATING"
+	IngestionStreamStatus_ACTIVE        IngestionStreamStatus = "ACTIVE"
+	IngestionStreamStatus_DELETING      IngestionStreamStatus = "DELETING"
+	IngestionStreamStatus_DELETED       IngestionStreamStatus = "DELETED"
+	IngestionStreamStatus_CREATE_FAILED IngestionStreamStatus = "CREATE_FAILED"
+	IngestionStreamStatus_DELETE_FAILED IngestionStreamStatus = "DELETE_FAILED"
+)
+
+type InitialScan string
+
+const (
+	InitialScan_ENABLED  InitialScan = "ENABLED"
+	InitialScan_DISABLED InitialScan = "DISABLED"
 )
 
 type LifecyclePolicyType string
@@ -70,6 +149,7 @@ type SecurityConfigType string
 const (
 	SecurityConfigType_saml              SecurityConfigType = "saml"
 	SecurityConfigType_iamidentitycenter SecurityConfigType = "iamidentitycenter"
+	SecurityConfigType_iamfederation     SecurityConfigType = "iamfederation"
 )
 
 type SecurityPolicyType string
@@ -77,6 +157,21 @@ type SecurityPolicyType string
 const (
 	SecurityPolicyType_encryption SecurityPolicyType = "encryption"
 	SecurityPolicyType_network    SecurityPolicyType = "network"
+)
+
+type ServerlessGeneration string
+
+const (
+	ServerlessGeneration_CLASSIC ServerlessGeneration = "CLASSIC"
+	ServerlessGeneration_NEXTGEN ServerlessGeneration = "NEXTGEN"
+)
+
+type ServerlessVectorAccelerationStatus string
+
+const (
+	ServerlessVectorAccelerationStatus_ENABLED  ServerlessVectorAccelerationStatus = "ENABLED"
+	ServerlessVectorAccelerationStatus_DISABLED ServerlessVectorAccelerationStatus = "DISABLED"
+	ServerlessVectorAccelerationStatus_ALLOWED  ServerlessVectorAccelerationStatus = "ALLOWED"
 )
 
 type StandbyReplicas string

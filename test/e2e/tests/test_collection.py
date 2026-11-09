@@ -22,7 +22,8 @@ from acktest import tags
 from acktest.resources import random_suffix_name
 from e2e import service_marker, CRD_GROUP, CRD_VERSION, load_resource
 from e2e.replacement_values import REPLACEMENT_VALUES
-from e2e import collection
+from e2e import collection, collection_group
+from e2e.tests.test_collection_group import simple_collection_group
 from e2e.tests.test_security_policy import simple_security_policy
 
 COLLECTION_RESOURCE_PLURAL = "collections"
@@ -72,6 +73,42 @@ def simple_collection(simple_security_policy):
     assert deleted
 
 
+@pytest.fixture
+def group_collection(simple_security_policy, simple_collection_group):
+    policy_ref, _, scope = simple_security_policy
+    group_ref, group_cr = simple_collection_group
+    assert collection_group.wait_until(
+        lambda: collection_group.is_synced(policy_ref)
+    ), "Encryption policy did not reach ResourceSynced=True"
+    collection_name = random_suffix_name(scope, 28)
+    replacements = REPLACEMENT_VALUES.copy()
+    replacements["COLLECTION_NAME"] = collection_name
+    replacements["DESCRIPTION"] = INITIAL_DESCRIPTION
+    resource_data = load_resource("collection", additional_replacements=replacements)
+    resource_data["spec"].update({
+        "type": "SEARCH",
+        "standbyReplicas": "DISABLED",
+        "collectionGroupRef": {"from": {"name": group_ref.name}},
+    })
+    ref = k8s.CustomResourceReference(
+        CRD_GROUP, CRD_VERSION, COLLECTION_RESOURCE_PLURAL,
+        collection_name, namespace="default",
+    )
+    k8s.create_custom_resource(ref, resource_data)
+    try:
+        k8s.wait_resource_consumed_by_controller(ref)
+        yield ref, group_ref, group_cr
+    finally:
+        # Children must finish deletion before the group fixture tears down.
+        if k8s.get_resource_exists(ref):
+            _, deleted = k8s.delete_custom_resource(
+                ref,
+                wait_periods=ACTIVE_WAIT_PERIODS,
+                period_length=ACTIVE_WAIT_PERIOD_LENGTH,
+            )
+            assert deleted, "Member Collection did not finish deletion"
+
+
 @service_marker
 @pytest.mark.canary
 class TestCollection:
@@ -95,7 +132,7 @@ class TestCollection:
 
         latest = collection.get(collection_id)
         assert latest is not None
-        latest['description'] == INITIAL_DESCRIPTION
+        assert latest['description'] == INITIAL_DESCRIPTION
 
         assert 'ackResourceMetadata' in cr['status']
         assert 'arn' in cr['status']['ackResourceMetadata']
@@ -114,6 +151,52 @@ class TestCollection:
             key_member_name='key',
             value_member_name='value'
         )
+
+        # Adding a group after creation passes optional-field admission, but
+        # UpdateCollection cannot carry that change. Report Terminal instead
+        # of claiming the unsupported association was synchronized.
+        assert "collectionGroupName" not in cr["spec"]
+        original_group_name = latest.get("collectionGroupName")
+        rejected_group_name = random_suffix_name("ack-rejected-group", 24)
+        k8s.patch_custom_resource(
+            ref, {"spec": {"collectionGroupName": rejected_group_name}}
+        )
+        assert k8s.wait_on_condition(
+            ref, "ACK.Terminal", "True",
+            wait_periods=ACTIVE_WAIT_PERIODS,
+            period_length=ACTIVE_WAIT_PERIOD_LENGTH,
+        ), "Post-create group association did not become Terminal"
+        terminal = k8s.get_resource_condition(ref, "ACK.Terminal")
+        assert terminal["message"] == (
+            "collectionGroupName can only be set when the collection is created"
+        )
+        assert not collection_group.is_synced(ref)
+        cr = k8s.get_resource(ref)
+        assert cr["spec"]["collectionGroupName"] == rejected_group_name
+        latest = collection.get(collection_id)
+        assert latest is not None
+        assert latest.get("collectionGroupName") == original_group_name
+        assert latest["description"] == INITIAL_DESCRIPTION
+
+        # Reverting the unsupported edit must clear Terminal and allow the
+        # existing description/tag update below to reconcile normally.
+        k8s.patch_custom_resource(ref, {"spec": {"collectionGroupName": None}})
+
+        def association_restored():
+            current = k8s.get_resource(ref)
+            terminal = k8s.get_resource_condition(ref, "ACK.Terminal")
+            return (
+                "collectionGroupName" not in current["spec"]
+                and collection_group.is_synced(ref)
+                and (terminal is None or terminal["status"] != "True")
+            )
+
+        assert collection_group.wait_until(
+            association_restored
+        ), "Collection did not recover after reverting its group change"
+        latest = collection.get(collection_id)
+        assert latest is not None
+        assert latest.get("collectionGroupName") == original_group_name
 
         # Update the collection
         updates = {
@@ -143,7 +226,7 @@ class TestCollection:
 
         latest = collection.get(collection_id)
         assert latest is not None
-        latest['description'] == INITIAL_DESCRIPTION
+        assert latest['description'] == UPDATED_DESCRIPTION
 
         assert 'ackResourceMetadata' in cr['status']
         assert 'arn' in cr['status']['ackResourceMetadata']
@@ -164,3 +247,106 @@ class TestCollection:
             key_member_name='key',
             value_member_name='value'
         )
+
+    def test_group_reference_membership_and_deletion(
+        self, group_collection, opensearchserverless_client
+    ):
+        ref, group_ref, group_cr = group_collection
+        group_name = group_cr["spec"]["name"]
+        group_id = group_cr["status"]["id"]
+        assert collection_group.wait_until(
+            lambda: collection_group.is_synced(ref)
+        ), "Member Collection did not reach ResourceSynced=True"
+        cr = k8s.get_resource(ref)
+        collection_id = cr["status"]["id"]
+        assert cr["spec"]["collectionGroupRef"]["from"]["name"] == group_ref.name
+        resolved = k8s.get_resource_condition(ref, "ACK.ReferencesResolved")
+        assert resolved is not None and resolved["status"] == "True"
+        latest = collection.get(collection_id)
+        assert latest is not None and latest["collectionGroupName"] == group_name
+
+        def member_is_listed():
+            return any(
+                member["id"] == collection_id
+                and member["collectionGroupName"] == group_name
+                for member in collection_group.get_members(
+                    group_name, opensearchserverless_client
+                )
+            )
+
+        assert collection_group.wait_until(member_is_listed), "AWS did not list the member"
+
+        # Child changes do not immediately enqueue the parent. A legitimate
+        # group edit causes its next read to refresh the observed member list.
+        description = "Group with an observed member"
+        k8s.patch_custom_resource(
+            group_ref, {"spec": {"description": description}}
+        )
+
+        def parent_observes_member():
+            parent = k8s.get_resource(group_ref)
+            members = parent["status"].get("memberCollections", [])
+            latest_group = collection_group.get(
+                group_id, opensearchserverless_client
+            )
+            return (
+                collection_group.is_synced(group_ref)
+                and latest_group["description"] == description
+                and any(member["id"] == collection_id for member in members)
+                and parent["status"]["numberOfCollections"]
+                == latest_group["numberOfCollections"] == 1
+            )
+
+        assert collection_group.wait_until(
+            parent_observes_member
+        ), "CollectionGroup did not refresh its member status"
+        parent = k8s.get_resource(group_ref)
+        member = next(
+            item for item in parent["status"]["memberCollections"]
+            if item["id"] == collection_id
+        )
+        assert member["name"] == cr["spec"]["name"]
+        assert member["arn"] == cr["status"]["ackResourceMetadata"]["arn"]
+        assert member["collectionGroupName"] == group_name
+
+        # The service rejects deleting a nonempty group; ACK must retain the
+        # finalizer and a recoverable error while the Collection still exists.
+        _, deleted = k8s.delete_custom_resource(
+            group_ref, wait_periods=1, period_length=DELETE_WAIT_AFTER_SECONDS
+        )
+        assert not deleted, "A group containing a Collection was deleted"
+
+        def deletion_is_retryable():
+            parent = k8s.get_resource(group_ref)
+            recoverable = k8s.get_resource_condition(group_ref, "ACK.Recoverable")
+            return (
+                bool(parent["metadata"].get("deletionTimestamp"))
+                and bool(parent["metadata"].get("finalizers"))
+                and recoverable is not None
+                and recoverable["status"] == "True"
+            )
+
+        assert collection_group.wait_until(
+            deletion_is_retryable
+        ), "Nonempty group deletion did not retain a recoverable error"
+        terminal = k8s.get_resource_condition(group_ref, "ACK.Terminal")
+        assert terminal is None or terminal["status"] != "True"
+        assert collection_group.get(group_id, opensearchserverless_client) is not None
+
+        _, deleted = k8s.delete_custom_resource(
+            ref,
+            wait_periods=ACTIVE_WAIT_PERIODS,
+            period_length=ACTIVE_WAIT_PERIOD_LENGTH,
+        )
+        assert deleted, "Member Collection did not finish deletion"
+        assert collection_group.wait_until(
+            lambda: collection.get(collection_id) is None
+        ), "Member Collection still exists in AWS"
+        assert collection_group.wait_until(
+            lambda: not k8s.get_resource_exists(group_ref)
+        ), "Empty group deletion did not resume after the member was removed"
+        assert collection_group.wait_until(
+            lambda: collection_group.get(
+                group_id, opensearchserverless_client
+            ) is None
+        ), "CollectionGroup still exists in AWS"

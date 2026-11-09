@@ -23,11 +23,17 @@ import (
 // CollectionSpec defines the desired state of Collection.
 type CollectionSpec struct {
 
+	// The name of the collection group to associate with the collection.
+	//
+	// Regex Pattern: `^[a-z][a-z0-9-]+$`
+	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="Value is immutable once set"
+	CollectionGroupName *string                                  `json:"collectionGroupName,omitempty"`
+	CollectionGroupRef  *ackv1alpha1.AWSResourceReferenceWrapper `json:"collectionGroupRef,omitempty"`
 	// Description of the collection.
 	Description *string `json:"description,omitempty"`
 	// Name of the collection.
 	//
-	// Regex Pattern: `^[a-z][a-z0-9-]+$`
+	// Regex Pattern: `^[a-z][a-z0-9_-]+$`
 	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="Value is immutable once set"
 	// +kubebuilder:validation:Required
 	Name *string `json:"name"`

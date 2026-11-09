@@ -51,23 +51,44 @@ type AccessPolicySummary struct {
 	Type             *string `json:"type_,omitempty"`
 }
 
+// Capacity details for an OpenSearch Serverless collection group, including
+// the current capacity and autoscaling status.
+type CapacityDetails struct {
+	// The autoscaling status of an OpenSearch Serverless collection group: ACTION_SCALING_UP,
+	// ACTION_SCALING_DOWN, or NO_ACTION.
+	AutoscalingStatus *string  `json:"autoscalingStatus,omitempty"`
+	CapacityInOcu     *float64 `json:"capacityInOcu,omitempty"`
+}
+
 // Details about each OpenSearch Serverless collection, including the collection
-// endpoint and the OpenSearch Dashboards endpoint.
+// endpoint, the OpenSearch Dashboards endpoint, and FIPS-compliant endpoints
+// for federal government workloads.
 type CollectionDetail struct {
-	ARN                *string `json:"arn,omitempty"`
-	CollectionEndpoint *string `json:"collectionEndpoint,omitempty"`
-	CreatedDate        *int64  `json:"createdDate,omitempty"`
-	DashboardEndpoint  *string `json:"dashboardEndpoint,omitempty"`
+	ARN                 *string `json:"arn,omitempty"`
+	CollectionEndpoint  *string `json:"collectionEndpoint,omitempty"`
+	CollectionGroupName *string `json:"collectionGroupName,omitempty"`
+	CreatedDate         *int64  `json:"createdDate,omitempty"`
+	DashboardEndpoint   *string `json:"dashboardEndpoint,omitempty"`
+	// Indicates whether deletion protection is ENABLED or DISABLED for the collection.
+	// When deletion protection is ENABLED, the collection cannot be deleted.
+	DeletionProtection *string `json:"deletionProtection,omitempty"`
 	Description        *string `json:"description,omitempty"`
 	FailureCode        *string `json:"failureCode,omitempty"`
 	FailureMessage     *string `json:"failureMessage,omitempty"`
-	ID                 *string `json:"id,omitempty"`
-	KMSKeyARN          *string `json:"kmsKeyARN,omitempty"`
-	LastModifiedDate   *int64  `json:"lastModifiedDate,omitempty"`
-	Name               *string `json:"name,omitempty"`
-	StandbyReplicas    *string `json:"standbyReplicas,omitempty"`
-	Status             *string `json:"status,omitempty"`
-	Type               *string `json:"type_,omitempty"`
+	// FIPS-compliant endpoint URLs for an OpenSearch Serverless collection. These
+	// endpoints ensure all data transmission uses FIPS 140-3 validated cryptographic
+	// implementations, meeting federal security requirements for government workloads.
+	FipsEndpoints    *FipsEndpoints `json:"fipsEndpoints,omitempty"`
+	ID               *string        `json:"id,omitempty"`
+	KMSKeyARN        *string        `json:"kmsKeyARN,omitempty"`
+	LastModifiedDate *int64         `json:"lastModifiedDate,omitempty"`
+	Name             *string        `json:"name,omitempty"`
+	StandbyReplicas  *string        `json:"standbyReplicas,omitempty"`
+	Status           *string        `json:"status,omitempty"`
+	Type             *string        `json:"type_,omitempty"`
+	// Configuration options for vector search capabilities in an OpenSearch Serverless
+	// collection.
+	VectorOptions *VectorOptions `json:"vectorOptions,omitempty"`
 }
 
 // Error information for an OpenSearch Serverless request.
@@ -81,37 +102,123 @@ type CollectionErrorDetail struct {
 // A list of filter keys that you can use for LIST, UPDATE, and DELETE requests
 // to OpenSearch Serverless collections.
 type CollectionFilters struct {
-	Name   *string `json:"name,omitempty"`
-	Status *string `json:"status,omitempty"`
+	CollectionGroupName *string `json:"collectionGroupName,omitempty"`
+	Name                *string `json:"name,omitempty"`
+	Status              *string `json:"status,omitempty"`
+}
+
+// Capacity limits for a collection group. These limits define the minimum and
+// maximum OpenSearch Compute Units (OCUs) for indexing and search operations
+// that can be used by collections in the group.
+type CollectionGroupCapacityLimits struct {
+	MaxIndexingCapacityInOCU *float64 `json:"maxIndexingCapacityInOCU,omitempty"`
+	MaxSearchCapacityInOCU   *float64 `json:"maxSearchCapacityInOCU,omitempty"`
+	MinIndexingCapacityInOCU *float64 `json:"minIndexingCapacityInOCU,omitempty"`
+	MinSearchCapacityInOCU   *float64 `json:"minSearchCapacityInOCU,omitempty"`
+}
+
+// Details about a collection group.
+type CollectionGroupDetail struct {
+	ARN *string `json:"arn,omitempty"`
+	// Capacity limits for a collection group. These limits define the minimum and
+	// maximum OpenSearch Compute Units (OCUs) for indexing and search operations
+	// that can be used by collections in the group.
+	CapacityLimits *CollectionGroupCapacityLimits `json:"capacityLimits,omitempty"`
+	CreatedDate    *int64                         `json:"createdDate,omitempty"`
+	// Current search and indexing capacity for an OpenSearch Serverless collection
+	// group. Measured in OpenSearch Compute Units (OCUs).
+	CurrentCapacity     *CurrentCapacity `json:"currentCapacity,omitempty"`
+	Description         *string          `json:"description,omitempty"`
+	Generation          *string          `json:"generation,omitempty"`
+	ID                  *string          `json:"id,omitempty"`
+	Name                *string          `json:"name,omitempty"`
+	NumberOfCollections *int64           `json:"numberOfCollections,omitempty"`
+	StandbyReplicas     *string          `json:"standbyReplicas,omitempty"`
+	Tags                []*Tag           `json:"tags,omitempty"`
+}
+
+// Error details for a collection group operation.
+type CollectionGroupErrorDetail struct {
+	ErrorCode    *string `json:"errorCode,omitempty"`
+	ErrorMessage *string `json:"errorMessage,omitempty"`
+	ID           *string `json:"id,omitempty"`
+	Name         *string `json:"name,omitempty"`
+}
+
+// Summary information about a collection group.
+type CollectionGroupSummary struct {
+	ARN *string `json:"arn,omitempty"`
+	// Capacity limits for a collection group. These limits define the minimum and
+	// maximum OpenSearch Compute Units (OCUs) for indexing and search operations
+	// that can be used by collections in the group.
+	CapacityLimits      *CollectionGroupCapacityLimits `json:"capacityLimits,omitempty"`
+	CreatedDate         *int64                         `json:"createdDate,omitempty"`
+	Generation          *string                        `json:"generation,omitempty"`
+	ID                  *string                        `json:"id,omitempty"`
+	Name                *string                        `json:"name,omitempty"`
+	NumberOfCollections *int64                         `json:"numberOfCollections,omitempty"`
 }
 
 // Details about each OpenSearch Serverless collection.
 type CollectionSummary struct {
-	ARN    *string `json:"arn,omitempty"`
-	ID     *string `json:"id,omitempty"`
-	Name   *string `json:"name,omitempty"`
-	Status *string `json:"status,omitempty"`
+	ARN                 *string `json:"arn,omitempty"`
+	CollectionGroupName *string `json:"collectionGroupName,omitempty"`
+	ID                  *string `json:"id,omitempty"`
+	KMSKeyARN           *string `json:"kmsKeyARN,omitempty"`
+	Name                *string `json:"name,omitempty"`
+	Status              *string `json:"status,omitempty"`
 }
 
 // Details about the created OpenSearch Serverless collection.
 type CreateCollectionDetail struct {
-	ARN              *string `json:"arn,omitempty"`
-	CreatedDate      *int64  `json:"createdDate,omitempty"`
-	Description      *string `json:"description,omitempty"`
-	ID               *string `json:"id,omitempty"`
-	KMSKeyARN        *string `json:"kmsKeyARN,omitempty"`
-	LastModifiedDate *int64  `json:"lastModifiedDate,omitempty"`
-	Name             *string `json:"name,omitempty"`
-	StandbyReplicas  *string `json:"standbyReplicas,omitempty"`
-	Status           *string `json:"status,omitempty"`
-	Type             *string `json:"type_,omitempty"`
+	ARN                 *string `json:"arn,omitempty"`
+	CollectionGroupName *string `json:"collectionGroupName,omitempty"`
+	CreatedDate         *int64  `json:"createdDate,omitempty"`
+	Description         *string `json:"description,omitempty"`
+	ID                  *string `json:"id,omitempty"`
+	KMSKeyARN           *string `json:"kmsKeyARN,omitempty"`
+	LastModifiedDate    *int64  `json:"lastModifiedDate,omitempty"`
+	Name                *string `json:"name,omitempty"`
+	StandbyReplicas     *string `json:"standbyReplicas,omitempty"`
+	Status              *string `json:"status,omitempty"`
+	Type                *string `json:"type_,omitempty"`
+}
+
+// Details about the created collection group.
+type CreateCollectionGroupDetail struct {
+	ARN *string `json:"arn,omitempty"`
+	// Capacity limits for a collection group. These limits define the minimum and
+	// maximum OpenSearch Compute Units (OCUs) for indexing and search operations
+	// that can be used by collections in the group.
+	CapacityLimits  *CollectionGroupCapacityLimits `json:"capacityLimits,omitempty"`
+	CreatedDate     *int64                         `json:"createdDate,omitempty"`
+	Description     *string                        `json:"description,omitempty"`
+	Generation      *string                        `json:"generation,omitempty"`
+	ID              *string                        `json:"id,omitempty"`
+	Name            *string                        `json:"name,omitempty"`
+	StandbyReplicas *string                        `json:"standbyReplicas,omitempty"`
+	Tags            []*Tag                         `json:"tags,omitempty"`
+}
+
+// Current search and indexing capacity for an OpenSearch Serverless collection
+// group. Measured in OpenSearch Compute Units (OCUs).
+type CurrentCapacity struct {
+	// Capacity details for an OpenSearch Serverless collection group, including
+	// the current capacity and autoscaling status.
+	Indexing *CapacityDetails `json:"indexing,omitempty"`
+	// Capacity details for an OpenSearch Serverless collection group, including
+	// the current capacity and autoscaling status.
+	Search *CapacityDetails `json:"search,omitempty"`
 }
 
 // Details about a deleted OpenSearch Serverless collection.
 type DeleteCollectionDetail struct {
-	ID     *string `json:"id,omitempty"`
-	Name   *string `json:"name,omitempty"`
-	Status *string `json:"status,omitempty"`
+	// Indicates whether deletion protection is ENABLED or DISABLED for the collection.
+	// When deletion protection is ENABLED, the collection cannot be deleted.
+	DeletionProtection *string `json:"deletionProtection,omitempty"`
+	ID                 *string `json:"id,omitempty"`
+	Name               *string `json:"name,omitempty"`
+	Status             *string `json:"status,omitempty"`
 }
 
 // Error information for an OpenSearch Serverless request.
@@ -130,11 +237,52 @@ type EffectiveLifecyclePolicyErrorDetail struct {
 	Type         *string `json:"type_,omitempty"`
 }
 
+// Encryption settings for a collection.
+type EncryptionConfig struct {
+	KMSKeyARN *string `json:"kmsKeyARN,omitempty"`
+}
+
+// FIPS-compliant endpoint URLs for an OpenSearch Serverless collection. These
+// endpoints ensure all data transmission uses FIPS 140-3 validated cryptographic
+// implementations, meeting federal security requirements for government workloads.
+type FipsEndpoints struct {
+	CollectionEndpoint *string `json:"collectionEndpoint,omitempty"`
+	DashboardEndpoint  *string `json:"dashboardEndpoint,omitempty"`
+}
+
 // Describes IAM Identity Center options for an OpenSearch Serverless security
 // configuration in the form of a key-value map.
 type IAMIdentityCenterConfigOptions struct {
 	ApplicationDescription *string `json:"applicationDescription,omitempty"`
 	ApplicationName        *string `json:"applicationName,omitempty"`
+}
+
+// An active alert about a running ingestion — operational issuesor updates
+// to processing state. Cleared when the issue resolves.
+type IngestionAlert struct {
+	Message *string `json:"message,omitempty"`
+}
+
+// A terminal failure reason explaining why an ingestion stopped.
+type IngestionFailureReason struct {
+	Message *string `json:"message,omitempty"`
+}
+
+// Details about an ingestion job.
+type IngestionJobDetail struct {
+	CollectionID *string `json:"collectionID,omitempty"`
+	Revision     *int64  `json:"revision,omitempty"`
+}
+
+// The Amazon S3 source configuration for an ingestion job.
+type IngestionJobS3Source struct {
+	KeyPrefix *string `json:"keyPrefix,omitempty"`
+}
+
+// Details about an ingestion stream.
+type IngestionStreamDetail struct {
+	CollectionID *string `json:"collectionID,omitempty"`
+	Revision     *int64  `json:"revision,omitempty"`
 }
 
 // Details about an OpenSearch Serverless lifecycle policy.
@@ -179,6 +327,13 @@ type LifecyclePolicySummary struct {
 	Name             *string `json:"name,omitempty"`
 	PolicyVersion    *string `json:"policyVersion,omitempty"`
 	Type             *string `json:"type_,omitempty"`
+}
+
+// Processing statistics for the Amazon S3 objects in an ingestion source.
+type S3Statistics struct {
+	ObjectsDiscovered *int64 `json:"objectsDiscovered,omitempty"`
+	ObjectsFailed     *int64 `json:"objectsFailed,omitempty"`
+	ObjectsIngested   *int64 `json:"objectsIngested,omitempty"`
 }
 
 // Describes SAML options for an OpenSearch Serverless security configuration
@@ -244,10 +399,25 @@ type UpdateCollectionDetail struct {
 	CreatedDate      *int64  `json:"createdDate,omitempty"`
 	Description      *string `json:"description,omitempty"`
 	ID               *string `json:"id,omitempty"`
+	KMSKeyARN        *string `json:"kmsKeyARN,omitempty"`
 	LastModifiedDate *int64  `json:"lastModifiedDate,omitempty"`
 	Name             *string `json:"name,omitempty"`
 	Status           *string `json:"status,omitempty"`
 	Type             *string `json:"type_,omitempty"`
+}
+
+// Details about the updated collection group.
+type UpdateCollectionGroupDetail struct {
+	ARN *string `json:"arn,omitempty"`
+	// Capacity limits for a collection group. These limits define the minimum and
+	// maximum OpenSearch Compute Units (OCUs) for indexing and search operations
+	// that can be used by collections in the group.
+	CapacityLimits *CollectionGroupCapacityLimits `json:"capacityLimits,omitempty"`
+	CreatedDate    *int64                         `json:"createdDate,omitempty"`
+	Description    *string                        `json:"description,omitempty"`
+	Generation     *string                        `json:"generation,omitempty"`
+	ID             *string                        `json:"id,omitempty"`
+	Name           *string                        `json:"name,omitempty"`
 }
 
 // Update details for an OpenSearch Serverless-managed interface endpoint.
@@ -266,4 +436,11 @@ type VPCEndpointDetail struct {
 type VPCEndpointErrorDetail struct {
 	ErrorCode    *string `json:"errorCode,omitempty"`
 	ErrorMessage *string `json:"errorMessage,omitempty"`
+}
+
+// Configuration options for vector search capabilities in an OpenSearch Serverless
+// collection.
+type VectorOptions struct {
+	// Specifies whether serverless vector acceleration is enabled for the collection.
+	ServerlessVectorAcceleration *string `json:"serverlessVectorAcceleration,omitempty"`
 }

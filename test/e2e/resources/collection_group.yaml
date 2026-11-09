@@ -1,0 +1,19 @@
+apiVersion: opensearchserverless.services.k8s.aws/v1alpha1
+kind: CollectionGroup
+metadata:
+  name: $GROUP_NAME
+spec:
+  name: $GROUP_NAME
+  description: $GROUP_DESCRIPTION
+  standbyReplicas: DISABLED
+  generation: CLASSIC
+  capacityLimits:
+    maxIndexingCapacityInOCU: 2
+    maxSearchCapacityInOCU: 2
+    minIndexingCapacityInOCU: 1
+    minSearchCapacityInOCU: 1
+  tags:
+  - key: owner
+    value: initial
+  - key: remove-me
+    value: initial

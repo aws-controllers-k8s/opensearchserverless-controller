@@ -98,6 +98,11 @@ func (rm *resourceManager) sdkFind(
 			tmpARN := ackv1alpha1.AWSResourceName(*elem.Arn)
 			ko.Status.ACKResourceMetadata.ARN = &tmpARN
 		}
+		if elem.CollectionGroupName != nil {
+			ko.Spec.CollectionGroupName = elem.CollectionGroupName
+		} else {
+			ko.Spec.CollectionGroupName = nil
+		}
 		if elem.CreatedDate != nil {
 			ko.Status.CreatedDate = elem.CreatedDate
 		} else {
@@ -224,6 +229,11 @@ func (rm *resourceManager) sdkCreate(
 		arn := ackv1alpha1.AWSResourceName(*resp.CreateCollectionDetail.Arn)
 		ko.Status.ACKResourceMetadata.ARN = &arn
 	}
+	if resp.CreateCollectionDetail.CollectionGroupName != nil {
+		ko.Spec.CollectionGroupName = resp.CreateCollectionDetail.CollectionGroupName
+	} else {
+		ko.Spec.CollectionGroupName = nil
+	}
 	if resp.CreateCollectionDetail.CreatedDate != nil {
 		ko.Status.CreatedDate = resp.CreateCollectionDetail.CreatedDate
 	} else {
@@ -295,6 +305,9 @@ func (rm *resourceManager) newCreateRequestPayload(
 ) (*svcsdk.CreateCollectionInput, error) {
 	res := &svcsdk.CreateCollectionInput{}
 
+	if r.ko.Spec.CollectionGroupName != nil {
+		res.CollectionGroupName = r.ko.Spec.CollectionGroupName
+	}
 	if r.ko.Spec.Description != nil {
 		res.Description = r.ko.Spec.Description
 	}
@@ -305,18 +318,18 @@ func (rm *resourceManager) newCreateRequestPayload(
 		res.StandbyReplicas = svcsdktypes.StandbyReplicas(*r.ko.Spec.StandbyReplicas)
 	}
 	if r.ko.Spec.Tags != nil {
-		f3 := []svcsdktypes.Tag{}
-		for _, f3iter := range r.ko.Spec.Tags {
-			f3elem := &svcsdktypes.Tag{}
-			if f3iter.Key != nil {
-				f3elem.Key = f3iter.Key
+		f4 := []svcsdktypes.Tag{}
+		for _, f4iter := range r.ko.Spec.Tags {
+			f4elem := &svcsdktypes.Tag{}
+			if f4iter.Key != nil {
+				f4elem.Key = f4iter.Key
 			}
-			if f3iter.Value != nil {
-				f3elem.Value = f3iter.Value
+			if f4iter.Value != nil {
+				f4elem.Value = f4iter.Value
 			}
-			f3 = append(f3, *f3elem)
+			f4 = append(f4, *f4elem)
 		}
-		res.Tags = f3
+		res.Tags = f4
 	}
 	if r.ko.Spec.Type != nil {
 		res.Type = svcsdktypes.CollectionType(*r.ko.Spec.Type)
@@ -339,6 +352,9 @@ func (rm *resourceManager) sdkUpdate(
 		exit(err)
 	}()
 	desired.SetStatus(latest)
+	if delta.DifferentAt("Spec.CollectionGroupName") {
+		return desired, ackerr.NewTerminalError(fmt.Errorf("collectionGroupName can only be set when the collection is created"))
+	}
 	if !collectionIsActive(desired) {
 		return desired, ackrequeue.Needed(fmt.Errorf("resource is %s", *desired.ko.Status.Status))
 	}
@@ -394,6 +410,11 @@ func (rm *resourceManager) sdkUpdate(
 		ko.Status.ID = resp.UpdateCollectionDetail.Id
 	} else {
 		ko.Status.ID = nil
+	}
+	if resp.UpdateCollectionDetail.KmsKeyArn != nil {
+		ko.Status.KMSKeyARN = resp.UpdateCollectionDetail.KmsKeyArn
+	} else {
+		ko.Status.KMSKeyARN = nil
 	}
 	if resp.UpdateCollectionDetail.LastModifiedDate != nil {
 		ko.Status.LastModifiedDate = resp.UpdateCollectionDetail.LastModifiedDate
