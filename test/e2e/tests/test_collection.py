@@ -152,6 +152,52 @@ class TestCollection:
             value_member_name='value'
         )
 
+        # Adding a group after creation passes optional-field admission, but
+        # UpdateCollection cannot carry that change. Report Terminal instead
+        # of claiming the unsupported association was synchronized.
+        assert "collectionGroupName" not in cr["spec"]
+        original_group_name = latest.get("collectionGroupName")
+        rejected_group_name = random_suffix_name("ack-rejected-group", 24)
+        k8s.patch_custom_resource(
+            ref, {"spec": {"collectionGroupName": rejected_group_name}}
+        )
+        assert k8s.wait_on_condition(
+            ref, "ACK.Terminal", "True",
+            wait_periods=ACTIVE_WAIT_PERIODS,
+            period_length=ACTIVE_WAIT_PERIOD_LENGTH,
+        ), "Post-create group association did not become Terminal"
+        terminal = k8s.get_resource_condition(ref, "ACK.Terminal")
+        assert terminal["message"] == (
+            "collectionGroupName can only be set when the collection is created"
+        )
+        assert not collection_group.is_synced(ref)
+        cr = k8s.get_resource(ref)
+        assert cr["spec"]["collectionGroupName"] == rejected_group_name
+        latest = collection.get(collection_id)
+        assert latest is not None
+        assert latest.get("collectionGroupName") == original_group_name
+        assert latest["description"] == INITIAL_DESCRIPTION
+
+        # Reverting the unsupported edit must clear Terminal and allow the
+        # existing description/tag update below to reconcile normally.
+        k8s.patch_custom_resource(ref, {"spec": {"collectionGroupName": None}})
+
+        def association_restored():
+            current = k8s.get_resource(ref)
+            terminal = k8s.get_resource_condition(ref, "ACK.Terminal")
+            return (
+                "collectionGroupName" not in current["spec"]
+                and collection_group.is_synced(ref)
+                and (terminal is None or terminal["status"] != "True")
+            )
+
+        assert collection_group.wait_until(
+            association_restored
+        ), "Collection did not recover after reverting its group change"
+        latest = collection.get(collection_id)
+        assert latest is not None
+        assert latest.get("collectionGroupName") == original_group_name
+
         # Update the collection
         updates = {
             "spec": {

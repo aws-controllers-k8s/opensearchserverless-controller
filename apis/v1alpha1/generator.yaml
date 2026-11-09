@@ -127,8 +127,10 @@ resources:
         is_immutable: true
       # The public API accepts association only during CreateCollection.
       # Generic gap: optional create-only fields and reference wrappers can
-      # escape immutability checks on absence/presence transitions. Suggested
-      # code-generator issue: enforce optional field/reference immutability.
+      # escape immutability checks on absence/presence transitions. The update
+      # hook rejects group deltas that UpdateCollection cannot carry.
+      # Suggested code-generator issue: enforce optional field/reference
+      # immutability.
       CollectionGroupName:
         is_immutable: true
         references:

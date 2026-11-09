@@ -1,4 +1,7 @@
 	desired.SetStatus(latest)
+	if delta.DifferentAt("Spec.CollectionGroupName") {
+		return desired, ackerr.NewTerminalError(fmt.Errorf("collectionGroupName can only be set when the collection is created"))
+	}
 	if !collectionIsActive(desired) {
 		return desired, ackrequeue.Needed(fmt.Errorf("resource is %s", *desired.ko.Status.Status))
 	}
